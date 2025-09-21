@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+# XTML compiled binary
+xtml/xtml
+
+# Build directories
+x64/
+Debug/
+Release/
+
+# Visual Studio files
+*.vcxproj.user
+*.sln.docstates
+.vs/
