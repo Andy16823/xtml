@@ -1,4 +1,3 @@
-#pragma once
 #include "Vars.h"
 #include "Utils.h"
 #include <sstream>
@@ -7,6 +6,7 @@
 #include <cctype>
 #include <vector>
 #include <iterator>
+#include <cstring>
 
 
 string Vars::trim_var(const string& var)
