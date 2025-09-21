@@ -24,12 +24,18 @@
     <ClCompile Include="Vars.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Core.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Vars.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Core.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

@@ -12,6 +12,7 @@ static void print_ln(const std::string& str);
 static void printerr_ln(const std::string& str);  
 static std::string file_name(const std::string& file_path);  
 static std::string file_name_no_ext(const std::string& file_name);  
+static std::string file_path_parent(const std::string& file_path);
 static std::string trim(const std::string& str);  
 static std::string trim_quotes(const std::string& str);  
 static std::string read_file(const std::string& filename);  

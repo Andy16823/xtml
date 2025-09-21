@@ -1,3 +1,4 @@
+#pragma once
 #include "Vars.h"
 #include "Utils.h"
 #include <sstream>
@@ -34,9 +35,10 @@ tuple<string, string> Vars::parse_var(const std::string& line)
 map<string, var> Vars::parse_vars(const std::string& content)
 {
 	map<string, var> vars;
-	std::istringstream stream(content);
-	std::string line;
-	while (std::getline(stream, line)) {
+	// split parts on ;
+	auto segments = Utils::split(content, ';');
+	// Parse each line for @var declarations
+	for (auto& line : segments) {
 		line = Utils::trim(line);
 		if (line.empty() || line[0] == '#' || line.rfind("@var") == string::npos) continue; // Skip comments and non-var lines
 		line = trim_var(line);
@@ -100,6 +102,45 @@ string Vars::replace_vars(string& content, const map<string, var>& vars)
 	return content;
 }
 
+string Vars::preprocess_content(const string& content)
+{
+	std::string result;
+	bool in_string = false;
+	bool last_was_space = false;
+
+	for (char ch : content) {
+		if (ch == '\t' || ch == '\n' || ch == '\r') continue;
+
+		if (ch == '"') {
+			in_string = !in_string;
+			result += ch;
+			last_was_space = false;
+			continue;
+		}
+
+		if (std::isspace(static_cast<unsigned char>(ch)) && !in_string) {
+			if (!last_was_space) {
+				result += ' ';
+				last_was_space = true;
+			}
+			continue;
+		}
+
+		if (in_string && ch == ' ') {
+			if (!last_was_space) {
+				result += ch;
+				last_was_space = true;
+			}
+		}
+		else {
+			result += ch;
+			last_was_space = false;
+		}
+	}
+
+	return result;
+}
+
 bool Vars::is_string_expr(const string& expr, const map<string, var>& vars)
 {
 	auto tokens = parse_tokens(expr, "+", false);
@@ -131,6 +172,31 @@ bool Vars::is_string_expr(vector<string>& tokens, const map<string, var>& vars)
 	return true;
 }
 
+bool Vars::is_numeric_expr(vector<string>& tokens, const map<string, var>& vars)
+{
+	for (auto& token : tokens) {
+		token = Utils::trim(token);
+		if (token.empty() || token == "+") continue;
+		// Check if token is a number literal
+		if (Utils::is_number(token)) {
+			continue;
+		}
+		// Check if token is a variable
+		else if (auto var = vars.find(token); var != vars.end()) {
+			if (var->second.type == DT_NUMBER && Utils::is_number(var->second.value)) {
+				continue;
+			}
+			else {
+				return false; // Variable is not a number
+			}
+		}
+		else {
+			return false; // Unknown token
+		}
+	}
+	return true;
+}
+
 var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 {
 	auto outval = string();
@@ -139,7 +205,11 @@ var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 	if (is_string_expr(tokens, vars)) {
 		return eval_str_expr(tokens, vars);
 	}
+	else if (is_numeric_expr(tokens, vars)) {
+		return eval_num_expr(tokens, vars);
+	}
 	else {
+
 		Utils::printerr_ln("Error: Unsupported expression type: " + expr);
 		return var{ "", DT_UNKNOWN };
 	}
@@ -165,4 +235,33 @@ var Vars::eval_str_expr(vector<string>& tokens, const map<string, var>& vars)
 	}
 
 	return var{ outval, DT_STRING };
+}
+
+var Vars::eval_num_expr(vector<string>& tokens, const map<string, var>& vars)
+{
+	// @var total = 5 + 10;
+	// @var total = 5 + 10 + var1 + var2;
+	int64_t sum = 0;
+	for (auto& token : tokens) {
+		token = Utils::trim(token);
+		if (token.empty() || token == "+") continue;
+		if (Utils::is_number(token)) {
+			sum += std::stoll(token);
+		}
+		else if (vars.find(token) != vars.end()) {
+			auto var = vars.at(token);
+			if (var.type == DT_NUMBER && Utils::is_number(var.value)) {
+				sum += std::stoll(var.value);
+			}
+			else {
+				Utils::printerr_ln("Error: Variable is not a number: " + token);
+				return { "", DT_UNKNOWN };
+			}
+		}
+		else {
+			Utils::printerr_ln("Error: Unknown token in expression: " + token);
+			return { "", DT_UNKNOWN };
+		}
+	}
+	return { std::to_string(sum), DT_NUMBER };
 }

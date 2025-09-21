@@ -128,11 +128,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vars.cpp" />
     <ClCompile Include="xtml.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vars.h" />
   </ItemGroup>

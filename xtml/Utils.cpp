@@ -1,3 +1,4 @@
+#pragma once
 #include "Utils.h"  
 #include <algorithm>  
 #include <iostream>  
@@ -41,7 +42,15 @@ std::string Utils::file_name_no_ext(const std::string& file_name)
    size_t last_dot = file_name.find_last_of('.');  
    if (last_dot == std::string::npos) return file_name;  
    return file_name.substr(0, last_dot);  
-}  
+}
+
+std::string Utils::file_path_parent(const std::string& file_path)
+{
+	size_t last_slash = file_path.find_last_of("/\\");
+	if (last_slash != std::string::npos)
+		return file_path.substr(0, last_slash);
+	return "";
+}
 
 std::string Utils::trim(const std::string& str)  
 {  
