@@ -99,3 +99,22 @@ std::vector<std::string> Utils::split(const std::string& str, char delimiter)
 	tokens.push_back(str.substr(start));
 	return tokens;
 }
+
+std::string Utils::replace(const std::string& str, const std::string& from, const std::string& to)
+{
+	std::string result = str;
+	size_t start_pos;
+	while ((start_pos = result.find(from)) != std::string::npos) {
+		result = result.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // Move past the replacement
+	}
+	return result;
+}
+
+bool Utils::starts_with(const std::string& str, const std::string& prefix)
+{
+	if (str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0) {
+		return true;
+	}
+	return false;
+}

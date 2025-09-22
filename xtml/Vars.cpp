@@ -32,28 +32,6 @@ tuple<string, string> Vars::parse_var(const std::string& line)
 	return make_tuple("", "");
 }
 
-map<string, var> Vars::parse_vars(const std::string& content)
-{
-	map<string, var> vars;
-	// split parts on ;
-	auto segments = Utils::split(content, ';');
-	// Parse each line for @var declarations
-	for (auto& line : segments) {
-		line = Utils::trim(line);
-		if (line.empty() || line[0] == '#' || line.rfind("@var") == string::npos) continue; // Skip comments and non-var lines
-		line = trim_var(line);
-		std::tuple<std::string, std::string> parsedVar = parse_var(line);
-		std::string key = std::get<0>(parsedVar);
-		std::string value = std::get<1>(parsedVar);
-		var varval = eval_expr(value, vars);
-
-		if (!key.empty() && varval.type != DT_UNKNOWN) {
-			vars[key] = varval;
-		}
-	}
-	return vars;
-}
-
 vector<string> Vars::parse_tokens(const string& expr, const char ops[], bool addop)
 {
 	// Split expression by operator while respecting quotes

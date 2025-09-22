@@ -23,7 +23,6 @@ class Vars
 public: 
 static string trim_var(const string& var);  
 static tuple<string, string> parse_var(const std::string& line);  
-static map<string, var> parse_vars(const std::string& content);  
 static vector<string> parse_tokens(const string& expr, const char* ops, bool addop);  
 static string replace_vars(string& content, const map<string, var>& vars);
 static string preprocess_content(const string& content);

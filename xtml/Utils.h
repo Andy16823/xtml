@@ -18,4 +18,6 @@ static std::string trim_quotes(const std::string& str);
 static std::string read_file(const std::string& filename);  
 static std::string replace_whitespace(const std::string& str, char replacement);  
 static std::vector<std::string> split(const std::string& str, char delimiter);  
+static std::string replace(const std::string& str, const std::string& from, const std::string& to);
+static bool starts_with(const std::string& str, const std::string& prefix);
 };

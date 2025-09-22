@@ -41,36 +41,19 @@ void create_file(string& content, const string& output_path) {
 }
 
 void action_build(const string& file_path) {
-	Utils::print_ln(string("Building file ") + file_path);
 
+	// Get the raw file name
 	auto file_name = Utils::file_name(file_path);
 	file_name = Utils::file_name_no_ext(file_name) + ".html";
+
+	// Get the file directory
 	auto file_dir = Utils::file_path_parent(file_path);
-	Utils::print_ln(string("Output file name: ") + file_dir + string("\\") + file_name);
+	auto output_path = file_dir + "\\" + file_name;
 
-	auto content = Utils::read_file(file_path);
-
+	// Build the file and write to output
 	map<string, var> vars;
-	auto blocks = Core::parse_blocks(content, "<xtml>", "</xtml>");
-	for (const auto& block : blocks) {
-		auto preprocessed = Vars::preprocess_content(block);
-		auto block_vars = Vars::parse_vars(preprocessed);
-		vars.insert(block_vars.begin(), block_vars.end());
-	}
-
-	//Utils::print_ln("Parsed Variables:");
-	//for (const auto& var : vars) {
-	//	const string& key = var.first;
-	//	const string& value = var.second.value;
-	//	Utils::print_ln("Key: " + key + ", Value: " + value);
-	//}
-
-	content = Vars::replace_vars(content, vars);
-	content = cleanup_content(content);
-	content = Core::remove_blocks(content, "<xtml>", "</xtml>");
-	content = Utils::trim(content);
-	create_file(content, file_dir + "\\" + file_name);
-	Utils::print_ln("Build completed.");
+	auto content = Core::build_file(file_path, vars);
+	Core::write_file(content, output_path);
 }
 
 int main(int argc, char* argv[])  
