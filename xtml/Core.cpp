@@ -54,7 +54,8 @@ string Core::resolve_includes(const string& content, const string& base_path)
 {
 	// Resolve include directives in content
 	string result = content;
-	auto tags = find_xtml_tags(result);
+	/*vector<tag> tags2 = find_xtml_tag(result);*/
+	vector<string> tags = find_xtml_tags_str(result);
 	for (auto tag : tags) {
 		auto attrs = parse_xtml_attributes(tag);
 		if (attrs.find("include") != attrs.end()) {
@@ -67,6 +68,24 @@ string Core::resolve_includes(const string& content, const string& base_path)
 		}
 	}
 	return result;
+}
+
+string Core::resolve_include(const string& include_path, map<string, var>& vars, XtmlTag tag, bool resolve_global)
+{
+	auto local_vars = params_to_vars(tag.attributes);
+	if (resolve_global) {
+		local_vars.insert(vars.begin(), vars.end());
+	}
+	auto include_content = Utils::read_file(include_path);
+	include_content = build_content(include_content, Utils::file_path_parent(include_path), local_vars);
+	Utils::print_ln("Processing include: " + include_path);
+	include_content = build_content(include_content, Utils::file_path_parent(include_path), local_vars);
+
+	if (resolve_global) {
+		vars.insert(local_vars.begin(), local_vars.end());
+	}
+
+	return include_content;
 }
 
 string Core::remove_blocks(const string& content, const string& start_tag, const string& end_tag)
@@ -105,20 +124,37 @@ string Core::build_file(const string& path, map<string, var>& vars)
 
 string Core::build_content(string& content, string base_path, map<string, var>& vars)
 {
-	content = resolve_includes(content, base_path);
-
-	Utils::print_ln("Includes resolved.");
-	Utils::print_ln(content);
-
 	// Parse variables from <xtml> blocks
-	auto blocks = Core::parse_blocks(content, "<xtml>", "</xtml>");
+	auto blocks = Core::find_xtml_tags(content);
 	for (const auto& block : blocks) {
-		auto preprocessed = Vars::preprocess_content(block);
+		if (block.self_closing && block.attributes.find("include") != block.attributes.end()) {
+			bool resolve_global = true;
+			if (block.attributes.find("resolve") != block.attributes.end()) {
+				auto resolve_val = Utils::trim(block.attributes.at("resolve"));
+				if (resolve_val == "local") {
+					resolve_global = false;
+				}
+			}
+			auto include_path = base_path + "\\" + Utils::trim(block.attributes.at("include"));
+			auto include_content = Core::resolve_include(include_path, vars, block, resolve_global);
+			content = Utils::replace(content, block.full, include_content);
+		}
+		auto preprocessed = Vars::preprocess_content(block.content);
 		auto block_vars = Core::parse_block(preprocessed);
 		vars.insert(block_vars.begin(), block_vars.end());
 	}
 
 	content = Vars::replace_vars(content, vars);
+
+	// Check for unresolved variables
+	auto unresolved = Core::find_unresolved_vars(content);
+	if (!unresolved.empty()) {
+		for (const auto& var : unresolved) {
+			Utils::printerr_ln("Error: Unresolved variable: " + var);
+		}
+		throw std::runtime_error("Build failed due to unresolved variables.");
+	}
+
 	content = clean_content(content);
 	content = Core::remove_blocks(content, "<xtml>", "</xtml>");
 	content = Utils::trim(content);
@@ -137,7 +173,7 @@ void Core::write_file(const string& content, const string& output_path)
 	file.close();
 }
 
-vector<string> Core::find_xtml_tags(const string& content)
+vector<string> Core::find_xtml_tags_str(const string& content)
 {
 	vector<string> tags;
 	// Example tag: <tag attr1="value1" attr2='value2'>
@@ -149,6 +185,45 @@ vector<string> Core::find_xtml_tags(const string& content)
 	}
 	return tags;
 }
+
+vector<XtmlTag> Core::find_xtml_tags(const string& content) {
+	vector<XtmlTag> tags;
+
+	// Kombinierte Regex:
+	// 1. Alternative: self-closing <xtml ... />
+	// 2. Alternative: block <xtml ...> ... </xtml>
+	// ([\s\S]*?) wird benutzt als dotall-Ersatz für inneren Inhalt
+	regex re(R"(<xtml\b([^>]*)\/>|<xtml\b([^>]*)>([\s\S]*?)<\/xtml>)");
+
+	auto it = sregex_iterator(content.begin(), content.end(), re);
+	auto end = sregex_iterator();
+
+	for (; it != end; ++it) {
+		smatch m = *it;
+		XtmlTag tag;
+
+		if (m[1].matched) {
+			// matched first alternative: self-closing
+			tag.full = m.str(0);
+			tag.head = string("<xtml") + m[1].str() + "/>";
+			tag.content = "";
+			tag.self_closing = true;
+		}
+		else {
+			// matched second alternative: block
+			tag.full = m.str(0);
+			tag.head = string("<xtml") + m[2].str() + ">";
+			tag.content = m[3].str();
+			tag.self_closing = false;
+		}
+
+		tag.attributes = Core::parse_xtml_attributes(tag.head);
+		tags.push_back(std::move(tag));
+	}
+
+	return tags;
+}
+
 
 map<string, string> Core::parse_xtml_attributes(const string& tag)
 {
@@ -179,4 +254,14 @@ map<string, var> Core::params_to_vars(const map<string, string>& params)
 		}
 	}
 	return vars;
+}
+
+vector<string> Core::find_unresolved_vars(const string& content)
+{
+	vector<string> unresolved;
+	std::regex re(R"(\{\{@([a-zA-Z0-9_]+)\}\})");
+	for (auto it = std::sregex_iterator(content.begin(), content.end(), re); it != std::sregex_iterator(); ++it) {
+		unresolved.push_back(it->str(1));
+	}
+	return unresolved;
 }
