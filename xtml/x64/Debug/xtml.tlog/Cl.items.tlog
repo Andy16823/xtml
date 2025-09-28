@@ -1,5 +1,7 @@
 C:\Users\andy1\source\repos\xtml\xtml\Core.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\Core.obj
+C:\Users\andy1\source\repos\xtml\xtml\FunctionRegistry.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\FunctionRegistry.obj
 C:\Users\andy1\source\repos\xtml\xtml\Include.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\Include.obj
+C:\Users\andy1\source\repos\xtml\xtml\ModuleStd.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\ModuleStd.obj
 C:\Users\andy1\source\repos\xtml\xtml\Utils.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\Utils.obj
 C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\Vars.obj
 C:\Users\andy1\source\repos\xtml\xtml\xtml.cpp;C:\Users\andy1\source\repos\xtml\xtml\x64\Debug\xtml.obj

@@ -28,7 +28,17 @@ void Utils::print_ln(const std::string& str)
 void Utils::printerr_ln(const std::string& str)  
 {  
    std::cerr << str << std::endl;  
-}  
+}
+
+void Utils::throw_err(const std::string& str, const std::string& stack_trace)
+{
+	std::cerr << "Error: " << str << std::endl;
+	if (!stack_trace.empty()) {
+		std::cerr << "Stack trace:" << std::endl;
+		std::cerr << stack_trace << std::endl;
+	}
+	throw std::runtime_error(str);
+}
 
 std::string Utils::file_name(const std::string& file_path)  
 {  

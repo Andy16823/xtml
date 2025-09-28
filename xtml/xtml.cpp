@@ -8,13 +8,19 @@
 #include <algorithm>
 #include <map>
 #include <tuple>
+#include "Globals.h"
 #include "Utils.h"
 #include "Vars.h"
 #include "Core.h"
+#include "FunctionRegistry.h"
+#include "ModuleStd.h"
 
 #define VERSION "0.0.0.1"
 
 using namespace std;
+
+FunctionRegistry g_functionRegistry;
+
 
 string cleanup_content(string& content) {
 	// Remove comments and trim whitespace
@@ -58,21 +64,27 @@ void action_build(const string& file_path) {
 
 int main(int argc, char* argv[])  
 {  
-   if (argc < 2) {  
-	   Utils::printerr_ln("Usage: <command> <file_path>");
-       return 1;  
-   }  
-
-   string command = argv[1];
-
-   if (command == "version") {
-	   Utils::print_ln(string("xtml version: ") + VERSION);
-	   return 0;
-   }
-   else if (command == "build") {
-	   action_build(argv[2]);
-   }
+	// Register standard functions
+	ModuleStd stdModule;
+	stdModule.RegisterFunctions(g_functionRegistry);
+	
 
 
-   return 0;  
+	if (argc < 2) {  
+		Utils::printerr_ln("Usage: <command> <file_path>");
+		return 1;  
+	}  
+
+	string command = argv[1];
+
+	if (command == "version") {
+		Utils::print_ln(string("xtml version: ") + VERSION);
+		return 0;
+	}
+	else if (command == "build") {
+		action_build(argv[2]);
+	}
+
+
+	return 0;  
 }

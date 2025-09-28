@@ -29,8 +29,15 @@ static string preprocess_content(const string& content);
 static bool is_string_expr(const string& expr, const map<string, var>& vars);
 static bool is_string_expr(vector<string>& tokens, const map<string, var>& vars);
 static bool is_numeric_expr(vector<string>& tokens, const map<string, var>& vars);
+static bool is_function_expr(vector<string>& tokens);
 static var eval_expr(const string& expr, const map<string, var>& vars);
 static var eval_str_expr(vector<string>& tokens, const map<string, var>& vars);
 static var eval_num_expr(vector<string>& tokens, const map<string, var>& vars);
+static var eval_func_expr(vector<string>& tokens, const map<string, var>& vars);
 static map<string, var> merge_vars(const map<string, var>& arr1, const map<string, var>& arr2);
+
+static bool is_function_expr(const string& token);
+static var eval_func_expr(const string& token, const map<string, var>& vars);
+
+
 };

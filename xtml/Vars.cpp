@@ -7,6 +7,7 @@
 #include <cctype>
 #include <vector>
 #include <iterator>
+#include "Globals.h"
 
 
 string Vars::trim_var(const string& var)
@@ -175,22 +176,74 @@ bool Vars::is_numeric_expr(vector<string>& tokens, const map<string, var>& vars)
 	return true;
 }
 
+bool Vars::is_function_expr(vector<string>& tokens)
+{
+	if (tokens.size() != 1) return false;
+
+	auto expr = Utils::trim(tokens[0]);
+	// Check if expression is a function call e.g. namespace::funcName(arg1, arg2)
+	if (expr.find("::") != string::npos && expr.find('(') != string::npos && expr.find(')') != string::npos) {
+		return true;
+	}
+	return false;
+}
+
 var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 {
 	auto outval = string();
 	auto tokens = parse_tokens(expr, "+", false); 
 
-	if (is_string_expr(tokens, vars)) {
-		return eval_str_expr(tokens, vars);
-	}
-	else if (is_numeric_expr(tokens, vars)) {
-		return eval_num_expr(tokens, vars);
-	}
-	else {
 
-		Utils::printerr_ln("Error: Unsupported expression type: " + expr);
-		return var{ "", DT_UNKNOWN };
+	// Neuer Ansatz, jedes token auflösen und dann je nach Typ weiterverarbeiten
+	// e.g. "Hello " + var1 + "!"  oder 5 + var2 + 10
+
+
+	var result = { "", DT_UNKNOWN };
+	for (auto token : tokens) {
+		token = Utils::trim(token);
+		if (token.empty()) continue;
+
+		// Step 1: Evaluate the token to a var
+		var evaledToken = { "", DT_UNKNOWN };
+		if (is_function_expr(token)) {
+			evaledToken = eval_func_expr(token, vars);
+		}
+		else if (Utils::is_string(token)) {
+			evaledToken = { Utils::trim_quotes(token), DT_STRING };
+		}
+		else if (Utils::is_number(token)) {
+			evaledToken = { token, DT_NUMBER };
+		}
+		else if (vars.find(token) != vars.end()) {
+			evaledToken = vars.at(token);
+		}
+		else {
+			Utils::throw_err("Error: Unknown token in expression: " + token);
+		}
+
+		// Step 2: Determine how to handle the evaluated token (for this case it's only + operator)
+		if (result.type == DT_UNKNOWN) {
+			result = evaledToken;
+		}
+		else {
+			if (result.type == DT_STRING || evaledToken.type == DT_STRING) {
+				// String concatenation
+				result.value += evaledToken.value;
+				result.type = DT_STRING;
+			}
+			else if (result.type == DT_NUMBER && evaledToken.type == DT_NUMBER) {
+				// Numeric addition
+				int64_t sum = std::stoll(result.value) + std::stoll(evaledToken.value);
+				result.value = std::to_string(sum);
+				result.type = DT_NUMBER;
+			}
+			else {
+				Utils::throw_err("Error: Incompatible types in expression: " + expr);
+			}
+		}
 	}
+	Utils::print_ln("Evaluated expression: " + expr + " => " + result.value + " (type: " + (result.type == DT_STRING ? "string" : result.type == DT_NUMBER ? "number" : "unknown") + ")");
+	return result;
 }
 
 var Vars::eval_str_expr(vector<string>& tokens, const map<string, var>& vars)
@@ -244,6 +297,34 @@ var Vars::eval_num_expr(vector<string>& tokens, const map<string, var>& vars)
 	return { std::to_string(sum), DT_NUMBER };
 }
 
+var Vars::eval_func_expr(vector<string>& tokens, const map<string, var>& vars)
+{
+	// e.g. std::toUpper("hello")
+	if (tokens.size() != 1) {
+		Utils::throw_err("Error: Invalid function expression." );
+	}
+	auto expr = Utils::trim(tokens[0]);
+	auto [namespaceName, functionName, args] = FunctionRegistry::ParseFunctionCall(expr);
+
+	// Prepare funct args
+	vector<var> funcArgs;
+	for (auto& arg : args) {
+		auto evaledArg = eval_expr(arg, vars);
+		if (evaledArg.type == DT_UNKNOWN) {
+			Utils::throw_err("Error: Failed to evaluate function argument: " + arg);
+		}
+		funcArgs.push_back(evaledArg);
+	}
+
+	// Call function
+	if (g_functionRegistry.Exists(namespaceName, functionName)) {
+		return g_functionRegistry.CallFunction(namespaceName, functionName, funcArgs);
+	}
+	else {
+		Utils::throw_err("Error: Function not found: " + namespaceName + "::" + functionName);
+	}
+}
+
 map<string, var> Vars::merge_vars(const map<string, var>& arr1, const map<string, var>& arr2)
 {
 	map<string, var> result = arr1;
@@ -253,4 +334,36 @@ map<string, var> Vars::merge_vars(const map<string, var>& arr1, const map<string
 	}
 
 	return result;
+}
+
+bool Vars::is_function_expr(const string& token)
+{
+	if (token.find("::") != string::npos && token.find('(') != string::npos && token.find(')') != string::npos) {
+		return true;
+	}
+	return false;
+}
+
+var Vars::eval_func_expr(const string& token, const map<string, var>& vars)
+{
+	auto expr = Utils::trim(token);
+	auto [namespaceName, functionName, args] = FunctionRegistry::ParseFunctionCall(expr);
+
+	// Prepare funct args
+	vector<var> funcArgs;
+	for (auto& arg : args) {
+		auto evaledArg = eval_expr(arg, vars);
+		if (evaledArg.type == DT_UNKNOWN) {
+			Utils::throw_err("Error: Failed to evaluate function argument: " + arg);
+		}
+		funcArgs.push_back(evaledArg);
+	}
+
+	// Call function
+	if (g_functionRegistry.Exists(namespaceName, functionName)) {
+		return g_functionRegistry.CallFunction(namespaceName, functionName, funcArgs);
+	}
+	else {
+		Utils::throw_err("Error: Function not found: " + namespaceName + "::" + functionName);
+	}
 }

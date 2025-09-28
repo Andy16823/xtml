@@ -129,14 +129,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp" />
+    <ClCompile Include="FunctionRegistry.cpp" />
     <ClCompile Include="Include.cpp" />
+    <ClCompile Include="ModuleStd.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vars.cpp" />
     <ClCompile Include="xtml.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h" />
+    <ClInclude Include="FunctionRegistry.h" />
+    <ClInclude Include="Globals.h" />
     <ClInclude Include="Include.h" />
+    <ClInclude Include="Module.h" />
+    <ClInclude Include="ModuleStd.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vars.h" />
   </ItemGroup>

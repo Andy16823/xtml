@@ -18,7 +18,7 @@ class Core
 {
 public:
 	static vector<string> parse_blocks(const string& content, const string& start_tag, const string& end_tag);
-	static map<string, var> parse_block(const std::string& content);
+	static map<string, var> parse_block(const std::string& content, map<string, var>& vars);
 	static string resolve_include(const string& include_path, map<string, var>& vars, XtmlTag tag, bool resolve_global = true);
 	static string remove_blocks(const string& content, const string& start_tag, const string& end_tag);
 	static string clean_content(string& content);	

@@ -34,9 +34,11 @@ vector<string> Core::parse_blocks(const string& content, const string& start_tag
 /// </summary>
 /// <param name="content"></param>
 /// <returns></returns>
-map<string, var> Core::parse_block(const std::string& content)
+map<string, var> Core::parse_block(const std::string& content, map<string, var>& vars)
 {
-	map<string, var> vars;
+	map<string, var> local_vars;
+	local_vars.insert(vars.begin(), vars.end());
+
 	// split parts on ;
 	auto segments = Utils::split(content, ';');
 	// Parse each line for @var declarations
@@ -53,13 +55,13 @@ map<string, var> Core::parse_block(const std::string& content)
 		std::tuple<std::string, std::string> parsedVar = Vars::parse_var(line);
 		std::string key = std::get<0>(parsedVar);
 		std::string value = std::get<1>(parsedVar);
-		var varval = Vars::eval_expr(value, vars);
+		var varval = Vars::eval_expr(value, local_vars);
 
 		if (!key.empty() && varval.type != DT_UNKNOWN) {
-			vars[key] = varval;
+			local_vars[key] = varval;
 		}
 	}
-	return vars;
+	return local_vars;
 }
 
 /// <summary>
@@ -183,7 +185,7 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 			content = Utils::replace(content, block.full, "");
 		}
 		auto preprocessed = Vars::preprocess_content(block.content);
-		auto block_vars = Core::parse_block(preprocessed);
+		auto block_vars = Core::parse_block(preprocessed, vars);
 		vars = Vars::merge_vars(vars, block_vars);
 	}
 
