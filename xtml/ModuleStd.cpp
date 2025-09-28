@@ -70,6 +70,22 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		return var{ std::to_string(args[0].value.length()), DT_NUMBER };
 		}, 1, 1);
 
+	registry.RegisterFunction("std", "trim", [](const vector<var>& args) -> var {
+		if (args.size() != 1 || args[0].type != DT_STRING) {
+			Utils::printerr_ln("Error: std::trim expects a single string argument.");
+			return var{ "", DT_UNKNOWN };
+		}
+		return var{ Utils::trim(args[0].value), DT_STRING };
+		}, 1, 1);
+
+	registry.RegisterFunction("std", "trimQuotes", [](const vector<var>& args) -> var {
+		if (args.size() != 1 || args[0].type != DT_STRING) {
+			Utils::printerr_ln("Error: std::trimQuotes expects a single string argument.");
+			return var{ "", DT_UNKNOWN };
+		}
+		return var{ Utils::trim_quotes(args[0].value), DT_STRING };
+		}, 1, 1);
+
 	registry.RegisterFunction("std", "uuid", [](const vector<var>& args) -> var {
 		if (!args.empty()) {
 			Utils::printerr_ln("Error: std::uuid expects no arguments.");

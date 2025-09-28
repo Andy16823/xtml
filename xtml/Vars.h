@@ -30,6 +30,7 @@ static bool is_string_expr(const string& expr, const map<string, var>& vars);
 static bool is_string_expr(vector<string>& tokens, const map<string, var>& vars);
 static bool is_numeric_expr(vector<string>& tokens, const map<string, var>& vars);
 static bool is_function_expr(vector<string>& tokens);
+static vector<string> parse_top_level_tokens(const string& expr);
 static var eval_expr(const string& expr, const map<string, var>& vars);
 static var eval_str_expr(vector<string>& tokens, const map<string, var>& vars);
 static var eval_num_expr(vector<string>& tokens, const map<string, var>& vars);

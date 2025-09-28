@@ -188,10 +188,47 @@ bool Vars::is_function_expr(vector<string>& tokens)
 	return false;
 }
 
+vector<string> Vars::parse_top_level_tokens(const string& expr)
+{
+	vector<string> tokens;
+	string current;
+	int paren_depth = 0;
+	bool in_quotes = false;
+
+	for (size_t i = 0; i < expr.size(); ++i) {
+		char c = expr[i];
+		
+		if (c == '"' && (i == 0 || expr[i - 1] != '\\')) {
+			in_quotes = !in_quotes;
+			current += c;
+			continue;
+		}
+
+		if (!in_quotes) {
+			if (c == '(') paren_depth++;
+			else if (c == ')') paren_depth--;
+			else if (c == '+' && paren_depth == 0) {
+				tokens.push_back(Utils::trim(current));
+				current.clear();
+				continue;
+			}
+		}
+
+		current += c;
+	}
+
+	if (!current.empty()) {
+		tokens.push_back(Utils::trim(current));
+	}
+
+	return tokens;
+}
+
 var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 {
 	auto outval = string();
-	auto tokens = parse_tokens(expr, "+", false); 
+	//auto tokens = parse_tokens(expr, "+", false); 
+	auto tokens = parse_top_level_tokens(expr);
 
 
 	// Neuer Ansatz, jedes token auflösen und dann je nach Typ weiterverarbeiten
@@ -209,7 +246,9 @@ var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 			evaledToken = eval_func_expr(token, vars);
 		}
 		else if (Utils::is_string(token)) {
-			evaledToken = { Utils::trim_quotes(token), DT_STRING };
+			auto str = Utils::trim_quotes(token);
+			str = Utils::escape_str(str);
+			evaledToken = { str, DT_STRING };
 		}
 		else if (Utils::is_number(token)) {
 			evaledToken = { token, DT_NUMBER };

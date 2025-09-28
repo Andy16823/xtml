@@ -40,6 +40,16 @@ void Utils::throw_err(const std::string& str, const std::string& stack_trace)
 	throw std::runtime_error(str);
 }
 
+std::string Utils::escape_str(const std::string& str)
+{
+	std::string result = str;
+	result = Utils::replace(result, "\\n", "\n");
+	result = Utils::replace(result, "\\t", "\t");
+	result = Utils::replace(result, "\\\"", "\"");
+	result = Utils::replace(result, "\\\\", "\\");
+	return result;
+}
+
 std::string Utils::file_name(const std::string& file_path)  
 {  
    size_t last_slash = file_path.find_last_of("/\\");  

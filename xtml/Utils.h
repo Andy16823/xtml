@@ -11,6 +11,7 @@ static bool is_string(const std::string& s);
 static void print_ln(const std::string& str);  
 static void printerr_ln(const std::string& str);  
 static void throw_err(const std::string& str, const std::string& stack_trace = "");
+static std::string escape_str(const std::string& str);
 static std::string file_name(const std::string& file_path);  
 static std::string file_name_no_ext(const std::string& file_name);  
 static std::string file_path_parent(const std::string& file_path);
