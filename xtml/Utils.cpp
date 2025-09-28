@@ -138,3 +138,11 @@ bool Utils::starts_with(const std::string& str, const std::string& prefix)
 	}
 	return false;
 }
+
+bool Utils::ends_with(const std::string& str, const std::string& suffix)
+{
+	if (str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0) {
+		return true;
+	}
+	return false;
+}

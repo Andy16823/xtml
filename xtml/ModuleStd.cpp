@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cctype>
 #include "Utils.h"
+#include <chrono>
+#include <random>
 
 using namespace std;
 
@@ -88,26 +90,67 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		return var{ Utils::trim_quotes(args[0].value), DT_STRING };
 		}, 1, 1);
 
-	registry.RegisterFunction("std", "uuid", [](const vector<var>& args) -> var {
-		if (!args.empty()) {
-			Utils::printerr_ln("Error: std::uuid expects no arguments.");
+	registry.RegisterFunction("std", "get", [](const vector<var>& args) -> var {
+		if (args.size() != 2 && args[0].type != DT_ARRAY && args[1].type != DT_NUMBER) {
+			Utils::printerr_ln("Error: std::get expects an array and a numeric index as arguments.");
 			return var{ "", DT_UNKNOWN };
 		}
+		auto arr = args[0].array;
+		int index = std::stoi(args[1].value);
+		if (index < 0 || index >= (int)arr.size()) {
+			Utils::throw_err("Error: std::get index out of bounds.");
+		}
+		auto value = arr[index];
+		return value;
+		}, 2, 2);
+
+	registry.RegisterFunction("std", "count", [](const vector<var>& args) -> var {
+		if (args.size() != 1 || args[0].type != DT_ARRAY) {
+			Utils::printerr_ln("Error: std::count expects a single array argument.");
+			return var{ "", DT_UNKNOWN };
+		}
+		return var{ std::to_string(args[0].array.size()), DT_NUMBER };
+		}, 1, 1);
+
+	registry.RegisterFunction("std", "print", [](const vector<var>& args) -> var {
+		if (args.size() != 1 || args[0].type != DT_STRING) {
+			Utils::printerr_ln("Error: std::print expects a single string argument.");
+			return var{ "", DT_UNKNOWN };
+		}
+		Utils::print_ln(args[0].value);
+		return var{ "", DT_STRING };
+		}, 1, 1);
+
+	registry.RegisterFunction("std", "uuid", [](const std::vector<var>& args) -> var {
+		// Optionaler Seed
+		unsigned int seed;
+		if (args.empty()) {
+			seed = std::chrono::steady_clock::now().time_since_epoch().count();
+		}
+		else if (args.size() == 1 && args[0].type == DT_NUMBER) {
+			seed = std::stoul(args[0].value);
+		}
+		else {
+			Utils::printerr_ln("Error: std::uuid expects 0 or 1 numeric argument (seed).");
+			return var{ "", DT_UNKNOWN };
+		}
+
+		static std::mt19937 rng(seed);
+		std::uniform_int_distribution<int> dist(0, 61); // 62 chars in charset
+
 		const char charset[] =
 			"0123456789"
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			"abcdefghijklmnopqrstuvwxyz";
-		const size_t max_index = (sizeof(charset) - 1);
-		std::string result;
-		result.resize(36);
+
+		std::string result(36, ' ');
 		for (int i = 0; i < 36; ++i) {
-			if (i == 8 || i == 13 || i == 18 || i == 23) {
+			if (i == 8 || i == 13 || i == 18 || i == 23)
 				result[i] = '-';
-			}
-			else {
-				result[i] = charset[rand() % max_index];
-			}
+			else
+				result[i] = charset[dist(rng)];
 		}
+
 		return var{ result, DT_STRING };
-		}, 0, 0);
+		}, 0, 1);
 }

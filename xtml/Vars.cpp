@@ -228,13 +228,7 @@ vector<string> Vars::parse_top_level_tokens(const string& expr)
 var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 {
 	auto outval = string();
-	//auto tokens = parse_tokens(expr, "+", false); 
 	auto tokens = parse_top_level_tokens(expr);
-
-
-	// Neuer Ansatz, jedes token auflösen und dann je nach Typ weiterverarbeiten
-	// e.g. "Hello " + var1 + "!"  oder 5 + var2 + 10
-
 
 	var result = { "", DT_UNKNOWN };
 	for (auto token : tokens) {
@@ -245,6 +239,9 @@ var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 		var evaledToken = { "", DT_UNKNOWN };
 		if (is_function_expr(token)) {
 			evaledToken = eval_func_expr(token, vars);
+		}
+		else if (is_array_expr(token)) {
+			evaledToken = eval_array_expr(token, vars);
 		}
 		else if (Utils::is_string(token)) {
 			auto str = Utils::trim_quotes(token);
@@ -406,4 +403,63 @@ var Vars::eval_func_expr(const string& token, const map<string, var>& vars)
 	else {
 		Utils::throw_err("Error: Function not found: " + namespaceName + "::" + functionName);
 	}
+}
+
+bool Vars::is_array_expr(const std::string& token)
+{
+	if (Utils::starts_with(token, "[") && Utils::ends_with(token, "]")) {
+		return true;
+	}
+	return false;
+}
+
+var Vars::eval_array_expr(const std::string& token, const std::map<std::string, var>& vars)
+{
+	// e.g. [ "item1", "item2", var1, var2 ]
+
+	vector<string> tokens;
+	bool in_quotes = false;
+	bool in_brackets = false;
+	int paren_depth = 0;
+
+	string current;
+	for (char c : token) {
+		if (c == '"' && (current.empty() || current.back() != '\\')) {
+			in_quotes = !in_quotes;
+			current += c;
+			continue;
+		}
+		if (!in_quotes) {
+			if (c == '[') {
+				in_brackets = true;
+				continue;
+			}
+			else if (c == ']') {
+				in_brackets = false;
+				continue;
+			}
+			else if (c == '(') paren_depth++;
+			else if (c == ')') paren_depth--;
+			else if (c == ',' && paren_depth == 0 && in_brackets) {
+				tokens.push_back(Utils::trim(current));
+				current.clear();
+				continue;
+			}
+		}
+		current += c;
+	}
+	if (!current.empty()) {
+		tokens.push_back(Utils::trim(current));
+	}
+
+	var result;
+	result.type = DT_ARRAY;
+	for (auto& item : tokens) {
+		auto evaledItem = eval_expr(item, vars);
+		if (evaledItem.type == DT_UNKNOWN) {
+			Utils::throw_err("Error: Failed to evaluate array item: " + item);
+		}
+		result.array.push_back(evaledItem);
+	}
+	return result;
 }

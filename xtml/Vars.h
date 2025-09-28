@@ -8,12 +8,14 @@ enum DataType
 	DT_STRING,
 	DT_NUMBER,
 	DT_BOOL,
+	DT_ARRAY,
 	DT_UNKNOWN
 };
 
 struct var {
 	std::string value;
 	DataType type;
+	std::vector<var> array; // For DT_ARRAY type
 };
 
 class Vars  
@@ -37,6 +39,8 @@ static std::map<std::string, var> merge_vars(const std::map<std::string, var>& a
 
 static bool is_function_expr(const std::string& token);
 static var eval_func_expr(const std::string& token, const std::map<std::string, var>& vars);
+static bool is_array_expr(const std::string& token);
+static var eval_array_expr(const std::string& token, const std::map<std::string, var>& vars);
 
 
 };
