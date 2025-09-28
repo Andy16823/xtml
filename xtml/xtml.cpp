@@ -76,7 +76,11 @@ void action_build(const std::string& file_path) {
 int main(int argc, char* argv[])  
 {  
 	auto exe_path = getExeDir();
-	loadModulesFromFolder(exe_path + "\\modules");
+	auto modules_path = exe_path + "\\modules";
+	if (!fs::exists(modules_path)) {
+		fs::create_directory(modules_path);
+	}
+	loadModulesFromFolder(modules_path);
 
 	// Register standard functions
 	ModuleStd stdModule;

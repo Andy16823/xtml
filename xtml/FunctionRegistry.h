@@ -28,6 +28,7 @@ public:
 	bool Exists(const std::string& namespaceName, const std::string& functionName);
 
 	static std::tuple<std::string, std::string, std::vector<std::string>> ParseFunctionCall(const std::string& expr);
+	static std::vector<std::string> parse_function_args(const std::string& argsStr);
 
 };
 

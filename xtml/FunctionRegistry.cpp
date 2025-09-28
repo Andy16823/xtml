@@ -72,20 +72,41 @@ tuple<std::string, std::string, vector<string>> FunctionRegistry::ParseFunctionC
 	auto functionName = Utils::trim(rest.substr(0, parenPos));
 
 	auto argsStr = Utils::trim(rest.substr(parenPos + 1, rest.size() - parenPos - 2));
-	if (argsStr.find(',') != std::string::npos) {
-		auto rawArgs = Utils::split(argsStr, ',');
-		for (auto& arg : rawArgs) {
-			arg = Utils::trim(arg);
-			if (!arg.empty()) {
-				args.push_back(arg);
-			}
-		}
-	}
-	else {
-		if (!argsStr.empty()) {
-			args.push_back(argsStr);
-		}
-	}
+	args = parse_function_args(argsStr);
 
 	return make_tuple(namespaceName, functionName, args);
+}
+
+std::vector<std::string> FunctionRegistry::parse_function_args(const std::string& argsStr)
+{
+	vector<string> args;
+	string current;
+	size_t paren_depth = 0;
+	bool in_quotes = false;
+	// math::add(10, 100), math::add(5, 10)
+	for (size_t i = 0; i < argsStr.size(); ++i) {
+		char c = argsStr[i];
+
+		if (c == '"' && (i == 0 || argsStr[i - 1] != '\\')) {
+			in_quotes = !in_quotes;
+			current += c;
+			continue;
+		}
+
+		if (!in_quotes) {
+			if (c == '(') paren_depth++;
+			else if (c == ')') paren_depth--;
+			else if (c == ',' && paren_depth == 0) {
+				args.push_back(Utils::trim(current));
+				current.clear();
+				continue;
+			}
+		}
+		current += c;
+	}
+
+	if (!current.empty()) {
+		args.push_back(Utils::trim(current));
+	}
+	return args;
 }
