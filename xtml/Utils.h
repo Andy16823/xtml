@@ -23,4 +23,5 @@ static std::vector<std::string> split(const std::string& str, char delimiter);
 static std::string replace(const std::string& str, const std::string& from, const std::string& to);
 static bool starts_with(const std::string& str, const std::string& prefix);
 static bool ends_with(const std::string& str, const std::string& suffix);
+static bool is_path_absolute(const std::string& path);
 };

@@ -1,7 +1,15 @@
-﻿  ModuleStd.cpp
+﻿  Core.cpp
+  FunctionRegistry.cpp
+  ModuleStd.cpp
 C:\Users\andy1\source\repos\xtml\xtml\ModuleStd.cpp(127,68): warning C4244: "=": Konvertierung von "_Rep" in "unsigned int", möglicher Datenverlust
 C:\Users\andy1\source\repos\xtml\xtml\ModuleStd.cpp(127,68): warning C4244:         with
 C:\Users\andy1\source\repos\xtml\xtml\ModuleStd.cpp(127,68): warning C4244:         [
 C:\Users\andy1\source\repos\xtml\xtml\ModuleStd.cpp(127,68): warning C4244:             _Rep=__int64
 C:\Users\andy1\source\repos\xtml\xtml\ModuleStd.cpp(127,68): warning C4244:         ]
+  Utils.cpp
+  Vars.cpp
+  xtml.cpp
+  Code wird generiert...
+C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp(406,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp(363,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
   xtml.vcxproj -> C:\Users\andy1\source\repos\xtml\x64\Debug\xtml.exe

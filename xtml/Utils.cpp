@@ -146,3 +146,11 @@ bool Utils::ends_with(const std::string& str, const std::string& suffix)
 	}
 	return false;
 }
+
+bool Utils::is_path_absolute(const std::string& path)
+{
+	if (path.size() >= 2 && std::isalpha(path[0]) && path[1] == ':') {
+		return true; // Windows absolute path (e.g., C:\)
+	}
+	return false;
+}

@@ -59,17 +59,23 @@ std::string getExeDir() {
 
 void action_build(const std::string& file_path) {
 
+	std::string path = file_path;
+	if (Utils::is_path_absolute(path) == false) {
+		auto current_path = fs::current_path().string();
+		path = current_path + "\\" + file_path;
+	}
+
 	// Get the raw file name
-	auto file_name = Utils::file_name(file_path);
+	auto file_name = Utils::file_name(path);
 	file_name = Utils::file_name_no_ext(file_name) + ".html";
 
 	// Get the file directory
-	auto file_dir = Utils::file_path_parent(file_path);
+	auto file_dir = Utils::file_path_parent(path);
 	auto output_path = file_dir + "\\" + file_name;
 
 	// Build the file and write to output
 	std::map<std::string, var> vars;
-	auto content = Core::build_file(file_path, vars);
+	auto content = Core::build_file(path, vars);
 	Core::write_file(content, output_path);
 }
 
@@ -86,7 +92,6 @@ int main(int argc, char* argv[])
 	ModuleStd stdModule;
 	stdModule.RegisterFunctions(g_functionRegistry);
 	
-
 
 	if (argc < 2) {  
 		Utils::printerr_ln("Usage: <command> <file_path>");
