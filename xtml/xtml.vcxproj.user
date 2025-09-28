@@ -4,4 +4,12 @@
     <LocalDebuggerCommandArguments>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='xtmlLib (Debug)|x64'">
+    <LocalDebuggerCommandArguments>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

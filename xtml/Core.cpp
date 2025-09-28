@@ -5,6 +5,8 @@
 #include "Utils.h"
 #include "Vars.h"
 
+using namespace std;
+
 /// <summary>
 /// Parse content into blocks based on start and end tags
 /// </summary>

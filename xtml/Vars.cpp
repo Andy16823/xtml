@@ -9,6 +9,7 @@
 #include <iterator>
 #include "Globals.h"
 
+using namespace std;
 
 string Vars::trim_var(const string& var)
 {

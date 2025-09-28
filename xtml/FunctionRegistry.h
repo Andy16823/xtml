@@ -27,7 +27,7 @@ public:
 	var CallFunction(const std::string& namespaceName, const std::string& functionName, const std::vector<var>& args);
 	bool Exists(const std::string& namespaceName, const std::string& functionName);
 
-	static tuple<std::string, std::string, vector<string>> ParseFunctionCall(const std::string& expr);
+	static std::tuple<std::string, std::string, std::vector<std::string>> ParseFunctionCall(const std::string& expr);
 
 };
 

@@ -4,31 +4,29 @@
 #include <map>
 #include "Vars.h"
 
-using namespace std;
-
 struct XtmlTag {
-	string full;
-	string head;
-	string content;
+	std::string full;
+	std::string head;
+	std::string content;
 	bool self_closing = false;
-	map<string, string> attributes;
+	std::map<std::string, std::string> attributes;
 };
 
 class Core
 {
 public:
-	static vector<string> parse_blocks(const string& content, const string& start_tag, const string& end_tag);
-	static map<string, var> parse_block(const std::string& content, map<string, var>& vars);
-	static string resolve_include(const string& include_path, map<string, var>& vars, XtmlTag tag, bool resolve_global = true);
-	static string remove_blocks(const string& content, const string& start_tag, const string& end_tag);
-	static string clean_content(string& content);	
-	static string build_file(const string& path, map<string, var>& vars);
-	static string build_content(string& content, string base_path, map<string, var>& vars);
-	static void write_file(const string& content, const string& output_path);
-	static vector<XtmlTag> find_xtml_tags(const string& content);
-	static map<string, string> parse_xtml_attributes(const string& tag);
-	static map<string, var> params_to_vars(const map<string, string>& params);
-	static vector<string> find_unresolved_vars(const string& content);
-	static tuple<string, var> resolve_self_closing_var(XtmlTag tag);
+	static std::vector<std::string> parse_blocks(const std::string& content, const std::string& start_tag, const std::string& end_tag);
+	static std::map<std::string, var> parse_block(const std::string& content, std::map<std::string, var>& vars);
+	static std::string resolve_include(const std::string& include_path, std::map<std::string, var>& vars, XtmlTag tag, bool resolve_global = true);
+	static std::string remove_blocks(const std::string& content, const std::string& start_tag, const std::string& end_tag);
+	static std::string clean_content(std::string& content);	
+	static std::string build_file(const std::string& path, std::map<std::string, var>& vars);
+	static std::string build_content(std::string& content, std::string base_path, std::map<std::string, var>& vars);
+	static void write_file(const std::string& content, const std::string& output_path);
+	static std::vector<XtmlTag> find_xtml_tags(const std::string& content);
+	static std::map<std::string, std::string> parse_xtml_attributes(const std::string& tag);
+	static std::map<std::string, var> params_to_vars(const std::map<std::string, std::string>& params);
+	static std::vector<std::string> find_unresolved_vars(const std::string& content);
+	static std::tuple<std::string, var> resolve_self_closing_var(XtmlTag tag);
 };
 

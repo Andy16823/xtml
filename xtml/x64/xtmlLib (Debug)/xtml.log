@@ -1,0 +1,11 @@
+﻿  Core.cpp
+  FunctionRegistry.cpp
+  Include.cpp
+  ModuleStd.cpp
+  Utils.cpp
+  Vars.cpp
+  xtml.cpp
+  Code wird generiert...
+C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp(366,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp(409,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+  xtml.vcxproj -> C:\Users\andy1\source\repos\xtml\x64\xtmlLib (Debug)\xtml.lib

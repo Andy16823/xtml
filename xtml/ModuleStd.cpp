@@ -3,6 +3,8 @@
 #include <cctype>
 #include "Utils.h"
 
+using namespace std;
+
 
 void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 {

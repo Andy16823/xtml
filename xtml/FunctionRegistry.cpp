@@ -1,6 +1,8 @@
 #include "FunctionRegistry.h"
 #include "Utils.h"
 
+using namespace std;
+
 XtmlNamespace FunctionRegistry::RegisterNamespace(const std::string& name)
 {
 	auto ns = XtmlNamespace{ name, {} };

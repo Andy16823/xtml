@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35521.163 d17.12
+VisualStudioVersion = 17.12.35521.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xtml", "xtml\xtml.vcxproj", "{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}"
 EndProject
@@ -11,6 +11,10 @@ Global
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		xtmlLib (Debug)|x64 = xtmlLib (Debug)|x64
+		xtmlLib (Debug)|x86 = xtmlLib (Debug)|x86
+		xtmlLib|x64 = xtmlLib|x64
+		xtmlLib|x86 = xtmlLib|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.Debug|x64.ActiveCfg = Debug|x64
@@ -21,6 +25,14 @@ Global
 		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.Release|x64.Build.0 = Release|x64
 		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.Release|x86.ActiveCfg = Release|Win32
 		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.Release|x86.Build.0 = Release|Win32
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib (Debug)|x64.ActiveCfg = xtmlLib (Debug)|x64
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib (Debug)|x64.Build.0 = xtmlLib (Debug)|x64
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib (Debug)|x86.ActiveCfg = xtmlLib (Debug)|Win32
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib (Debug)|x86.Build.0 = xtmlLib (Debug)|Win32
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib|x64.ActiveCfg = xtmlLib|x64
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib|x64.Build.0 = xtmlLib|x64
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib|x86.ActiveCfg = xtmlLib|Win32
+		{D2B75C99-8BF0-40E0-81F1-538E4EF63FDE}.xtmlLib|x86.Build.0 = xtmlLib|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
