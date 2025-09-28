@@ -5,6 +5,13 @@
 #include "Utils.h"
 #include "Vars.h"
 
+/// <summary>
+/// Parse content into blocks based on start and end tags
+/// </summary>
+/// <param name="content"></param>
+/// <param name="start_tag"></param>
+/// <param name="end_tag"></param>
+/// <returns></returns>
 vector<string> Core::parse_blocks(const string& content, const string& start_tag, const string& end_tag)
 {
 	// Parse content into blocks based on start and end tags
@@ -22,6 +29,11 @@ vector<string> Core::parse_blocks(const string& content, const string& start_tag
 	return blocks;
 }
 
+/// <summary>
+/// Parse a single block for variable declarations
+/// </summary>
+/// <param name="content"></param>
+/// <returns></returns>
 map<string, var> Core::parse_block(const std::string& content)
 {
 	map<string, var> vars;
@@ -50,44 +62,52 @@ map<string, var> Core::parse_block(const std::string& content)
 	return vars;
 }
 
-string Core::resolve_includes(const string& content, const string& base_path)
-{
-	// Resolve include directives in content
-	string result = content;
-	/*vector<tag> tags2 = find_xtml_tag(result);*/
-	vector<string> tags = find_xtml_tags_str(result);
-	for (auto tag : tags) {
-		auto attrs = parse_xtml_attributes(tag);
-		if (attrs.find("include") != attrs.end()) {
-			auto vars = params_to_vars(attrs);
-			auto include_path = base_path + "\\" + Utils::trim(attrs["include"]);
-			auto include_content = Utils::read_file(include_path);
-			include_content = build_content(include_content, Utils::file_path_parent(include_path), vars);
-			result = Utils::replace(result, tag, include_content);
-			Utils::print_ln("Processing include: " + include_path);
-		}
-	}
-	return result;
-}
-
+/// <summary>
+/// Resolve an include directive
+/// </summary>
+/// <param name="include_path"></param>
+/// <param name="vars"></param>
+/// <param name="tag"></param>
+/// <param name="resolve_global"></param>
+/// <returns></returns>
 string Core::resolve_include(const string& include_path, map<string, var>& vars, XtmlTag tag, bool resolve_global)
 {
-	auto local_vars = params_to_vars(tag.attributes);
+	// Resolve an include directive
+	Utils::print_ln("Resolving include: " + include_path);
+	map<string, var> local_vars;
+
+	// Copy global vars to local if resolve as global
 	if (resolve_global) {
 		local_vars.insert(vars.begin(), vars.end());
 	}
+
+	// Parse parameters from tag attributes and resolve them if needed
+	auto param_vars = params_to_vars(tag.attributes);
+	for (auto& [k, v] : param_vars) {
+		v.value = Vars::replace_vars(v.value, vars);
+	}
+	local_vars = Vars::merge_vars(local_vars, param_vars);
+
+	// Read and build included content
 	auto include_content = Utils::read_file(include_path);
-	include_content = build_content(include_content, Utils::file_path_parent(include_path), local_vars);
 	Utils::print_ln("Processing include: " + include_path);
 	include_content = build_content(include_content, Utils::file_path_parent(include_path), local_vars);
 
+	// Merge local vars back to global if resolve as global
 	if (resolve_global) {
-		vars.insert(local_vars.begin(), local_vars.end());
+		vars = Vars::merge_vars(vars, local_vars);
 	}
 
 	return include_content;
 }
 
+/// <summary>
+/// Remove blocks from content based on start and end tags
+/// </summary>
+/// <param name="content"></param>
+/// <param name="start_tag"></param>
+/// <param name="end_tag"></param>
+/// <returns></returns>
 string Core::remove_blocks(const string& content, const string& start_tag, const string& end_tag)
 {
 	// Remove blocks from content based on start and end tags
@@ -97,6 +117,11 @@ string Core::remove_blocks(const string& content, const string& start_tag, const
 	return result;
 }
 
+/// <summary>
+/// Clean content by removing comments and trimming whitespace
+/// </summary>
+/// <param name="content"></param>
+/// <returns></returns>
 string Core::clean_content(string& content)
 {
 	// Remove comments and trim whitespace
@@ -113,6 +138,12 @@ string Core::clean_content(string& content)
 	return cleaned;
 }
 
+/// <summary>
+/// Build a file by processing its content and resolving includes and variables
+/// </summary>
+/// <param name="path"></param>
+/// <param name="vars"></param>
+/// <returns></returns>
 string Core::build_file(const string& path, map<string, var>& vars)
 {
 	Utils::print_ln(string("Building file ") + path);
@@ -122,6 +153,13 @@ string Core::build_file(const string& path, map<string, var>& vars)
 	return build_content(content, base_path, vars);
 }
 
+/// <summary>
+/// Build content by processing includes and variables
+/// </summary>
+/// <param name="content"></param>
+/// <param name="base_path"></param>
+/// <param name="vars"></param>
+/// <returns></returns>
 string Core::build_content(string& content, string base_path, map<string, var>& vars)
 {
 	// Parse variables from <xtml> blocks
@@ -139,9 +177,14 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 			auto include_content = Core::resolve_include(include_path, vars, block, resolve_global);
 			content = Utils::replace(content, block.full, include_content);
 		}
+		else if (block.self_closing && block.attributes.find("define") != block.attributes.end()) {
+			auto [var_key, var_value] = Core::resolve_self_closing_var(block);
+			vars[var_key] = var_value;
+			content = Utils::replace(content, block.full, "");
+		}
 		auto preprocessed = Vars::preprocess_content(block.content);
 		auto block_vars = Core::parse_block(preprocessed);
-		vars.insert(block_vars.begin(), block_vars.end());
+		vars = Vars::merge_vars(vars, block_vars);
 	}
 
 	content = Vars::replace_vars(content, vars);
@@ -151,6 +194,8 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 	if (!unresolved.empty()) {
 		for (const auto& var : unresolved) {
 			Utils::printerr_ln("Error: Unresolved variable: " + var);
+			Utils::printerr_ln("Stack trace:");
+			Utils::printerr_ln(content);
 		}
 		throw std::runtime_error("Build failed due to unresolved variables.");
 	}
@@ -163,6 +208,11 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 	return content;
 }
 
+/// <summary>
+/// Write content to a file
+/// </summary>
+/// <param name="content"></param>
+/// <param name="output_path"></param>
 void Core::write_file(const string& content, const string& output_path)
 {
 	std::ofstream file(output_path);
@@ -173,19 +223,11 @@ void Core::write_file(const string& content, const string& output_path)
 	file.close();
 }
 
-vector<string> Core::find_xtml_tags_str(const string& content)
-{
-	vector<string> tags;
-	// Example tag: <tag attr1="value1" attr2='value2'>
-	regex re(R"(<xtml\b[^>]*?/?>)");
-	auto beginn = sregex_iterator(content.begin(), content.end(), re);
-	auto end = sregex_iterator();
-	for (auto i = beginn; i != end; ++i) {
-		tags.push_back(i->str());
-	}
-	return tags;
-}
-
+/// <summary>
+/// Find all <xtml> tags in the content. Includes both self-closing and block tags.
+/// </summary>
+/// <param name="content"></param>
+/// <returns></returns>
 vector<XtmlTag> Core::find_xtml_tags(const string& content) {
 	vector<XtmlTag> tags;
 
@@ -224,7 +266,11 @@ vector<XtmlTag> Core::find_xtml_tags(const string& content) {
 	return tags;
 }
 
-
+/// <summary>
+/// Parse attributes from an XHTML tag string
+/// </summary>
+/// <param name="tag"></param>
+/// <returns></returns>
 map<string, string> Core::parse_xtml_attributes(const string& tag)
 {
 	map<string, string> attributes;
@@ -242,6 +288,11 @@ map<string, string> Core::parse_xtml_attributes(const string& tag)
 	return attributes;
 }
 
+/// <summary>
+/// Map parameters (string) to vars (var)
+/// </summary>
+/// <param name="params"></param>
+/// <returns></returns>
 map<string, var> Core::params_to_vars(const map<string, string>& params)
 {
 	// Convert string parameters to var types
@@ -256,6 +307,11 @@ map<string, var> Core::params_to_vars(const map<string, string>& params)
 	return vars;
 }
 
+/// <summary>
+/// Find unresolved variables in the content
+/// </summary>
+/// <param name="content"></param>
+/// <returns></returns>
 vector<string> Core::find_unresolved_vars(const string& content)
 {
 	vector<string> unresolved;
@@ -264,4 +320,53 @@ vector<string> Core::find_unresolved_vars(const string& content)
 		unresolved.push_back(it->str(1));
 	}
 	return unresolved;
+}
+
+/// <summary>
+/// Resolve a self-closing <xtml> tag that defines a variable
+/// e.g. <xtml define="varName" value="varValue" type="string" />
+/// types: string (default), number
+/// </summary>
+/// <param name="tag"></param>
+/// <returns></returns>
+tuple<string, var> Core::resolve_self_closing_var(XtmlTag tag)
+{
+	auto var_key = tag.attributes.contains("define") ? Utils::trim(tag.attributes.at("define")) : "";
+	if (var_key.empty()) {
+		Utils::printerr_ln("Error: Variable key is empty.");
+		Utils::printerr_ln("Stack trace:");
+		Utils::printerr_ln(tag.full);
+		throw std::runtime_error("Variable key is empty.");
+	}
+
+	auto var_value = tag.attributes.contains("value") ? Utils::trim(tag.attributes.at("value")) : "";
+	auto var_type = tag.attributes.contains("type") ? Utils::trim(tag.attributes.at("type")) : "string";
+
+	if (var_value.empty()) {
+		Utils::printerr_ln("Error: Variable value is empty for variable: " + var_key);
+		Utils::printerr_ln("Stack trace:");
+		Utils::printerr_ln(tag.full);
+		throw std::runtime_error("Variable value is empty.");
+	}
+
+	if (var_type == "string") {
+		return tuple(var_key, var{ var_value, DT_STRING });
+	}
+	else if (var_type == "number") {
+		if (Utils::is_number(var_value)) {
+			return tuple(var_key, var{ var_value, DT_NUMBER });
+		}
+		else {
+			Utils::printerr_ln("Error: Invalid number value for variable: " + var_key);
+			Utils::printerr_ln("Stack trace:");
+			Utils::printerr_ln(tag.full);
+			throw std::runtime_error("Invalid number value.");
+		}
+	}
+	else {
+		Utils::printerr_ln("Error: Unknown variable type: " + var_type + " for variable: " + var_key);
+		Utils::printerr_ln("Stack trace:");
+		Utils::printerr_ln(tag.full);
+		throw std::runtime_error("Unknown variable type.");
+	}
 }

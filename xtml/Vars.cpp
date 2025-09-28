@@ -243,3 +243,14 @@ var Vars::eval_num_expr(vector<string>& tokens, const map<string, var>& vars)
 	}
 	return { std::to_string(sum), DT_NUMBER };
 }
+
+map<string, var> Vars::merge_vars(const map<string, var>& arr1, const map<string, var>& arr2)
+{
+	map<string, var> result = arr1;
+
+	for (auto& [key, value] : arr2) {
+		result[key] = value;
+	}
+
+	return result;
+}
