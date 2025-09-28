@@ -28,5 +28,6 @@ public:
 	static std::map<std::string, var> params_to_vars(const std::map<std::string, std::string>& params);
 	static std::vector<std::string> find_unresolved_vars(const std::string& content);
 	static std::tuple<std::string, var> resolve_self_closing_var(XtmlTag tag);
+	static std::string resolve_placeholders(const std::string& content, const std::map<std::string, var>& vars);
 };
 

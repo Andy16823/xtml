@@ -113,12 +113,11 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "print", [](const vector<var>& args) -> var {
-		if (args.size() != 1 || args[0].type != DT_STRING) {
-			Utils::printerr_ln("Error: std::print expects a single string argument.");
+		if (args.size() != 1) {
+			Utils::printerr_ln("Error: std::print expects a single argument.");
 			return var{ "", DT_UNKNOWN };
 		}
-		Utils::print_ln(args[0].value);
-		return var{ "", DT_STRING };
+		return var{ args[0].value , DT_STRING};
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "uuid", [](const std::vector<var>& args) -> var {

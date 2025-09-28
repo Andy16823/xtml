@@ -191,7 +191,7 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 		vars = Vars::merge_vars(vars, block_vars);
 	}
 
-	content = Vars::replace_vars(content, vars);
+	content = resolve_placeholders(content, vars);
 
 	// Check for unresolved variables
 	auto unresolved = Core::find_unresolved_vars(content);
@@ -201,7 +201,7 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 			Utils::printerr_ln("Stack trace:");
 			Utils::printerr_ln(content);
 		}
-		throw std::runtime_error("Build failed due to unresolved variables.");
+		Utils::throw_err("Build failed due to unresolved variables.");
 	}
 
 	content = clean_content(content);
@@ -373,4 +373,42 @@ tuple<string, var> Core::resolve_self_closing_var(XtmlTag tag)
 		Utils::printerr_ln(tag.full);
 		throw std::runtime_error("Unknown variable type.");
 	}
+}
+
+std::string Core::resolve_placeholders(const std::string& content, const std::map<std::string, var>& vars)
+{
+	// Resolving playeholders like {{@varName}} or {{namespace::funcName(arg1, arg2)}}
+
+	map<string, var> results;
+	string result = content;
+	regex re(R"(\{\{([^\}]+)\}\})");
+
+	auto it = sregex_iterator(content.begin(), content.end(), re);
+	auto end = sregex_iterator();
+
+	for (; it != end; ++it) {
+		std::smatch match = *it;
+		std::string placeholder = match.str(0); // Full match including {{}}
+		std::string inner = match.str(1); // Inner content
+
+		inner = Utils::trim(inner);
+		if (inner[0] == '@') {
+			string var_name = inner.substr(1);
+			var var_val = Vars::eval_expr(var_name, vars);
+			results[placeholder] = var_val;
+		}
+		else if (Vars::is_function_expr(inner)) {
+			var func_val = Vars::eval_func_expr(inner, vars);
+			results[placeholder] = func_val;
+		}
+		else {
+			Utils::throw_err("Error: Unknown placeholder format: " + placeholder);
+		}
+	}
+
+	for (const auto& [placeholder, var_val] : results) {
+		result = Utils::replace(result, placeholder, var_val.value);
+	}
+
+	return result;
 }
