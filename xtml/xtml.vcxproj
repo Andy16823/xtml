@@ -245,6 +245,7 @@
     <ClCompile Include="FunctionRegistry.cpp" />
     <ClCompile Include="Include.cpp" />
     <ClCompile Include="ModuleStd.cpp" />
+    <ClCompile Include="Statements.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vars.cpp" />
     <ClCompile Include="xtml.cpp" />
@@ -256,6 +257,7 @@
     <ClInclude Include="Include.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleStd.h" />
+    <ClInclude Include="Statements.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vars.h" />
   </ItemGroup>

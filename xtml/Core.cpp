@@ -4,6 +4,7 @@
 #include <fstream>
 #include "Utils.h"
 #include "Vars.h"
+#include "Statements.h"
 
 using namespace std;
 
@@ -63,6 +64,91 @@ map<string, var> Core::parse_block(const std::string& content, map<string, var>&
 			local_vars[key] = varval;
 		}
 	}
+	return local_vars;
+}
+
+/// <summary>
+/// Interperter pass
+/// </summary>
+/// <param name="statements"></param>
+/// <param name="vars"></param>
+/// <returns></returns>
+std::map<std::string, var> Core::parse_statements(const std::vector<std::string>& statements, std::map<std::string, var>& vars)
+{
+	map<string, var> local_vars;
+	local_vars.insert(vars.begin(), vars.end());
+
+	bool in_if = false;
+	IfStatement if_stmt;
+
+	// Parse each statement for variable declarations
+	for (const auto& stmt : statements) {
+		auto line = Utils::trim(stmt);
+
+		if (Utils::starts_with(line, "@var")) {
+			if (in_if) {
+				auto if_vars = Statements::resolve_if_statement(if_stmt, local_vars);
+				local_vars = Vars::merge_vars(local_vars, if_vars);
+				in_if = false;
+				if_stmt = IfStatement();
+			}
+			// Parse simple @var declarations
+			line = Vars::trim_var(line); // Todo: refactor to work with semicolons in strings
+			auto [key, value] = Vars::parse_var(line);
+			auto varval = Vars::eval_expr(value, local_vars);
+
+			if (!key.empty() && varval.type != DT_UNKNOWN) {
+				local_vars[key] = varval;
+			}
+			else {
+				Utils::throw_err("Error: Failed to parse variable declaration: " + line);
+			}
+		}
+		else if (Utils::starts_with(line, "@if")) {
+			if (in_if) {
+				auto if_vars = Statements::resolve_if_statement(if_stmt, local_vars);
+				local_vars = Vars::merge_vars(local_vars, if_vars);
+				in_if = false;
+				if_stmt = IfStatement();
+			}
+			in_if = true;
+			if_stmt = IfStatement();
+			IfBranch branch;
+			branch.condition = Statements::parse_statement_condition(line);
+			branch.content = Core::extract_code_section(line);
+			if_stmt.branches.push_back(branch);
+		}
+		else if (Utils::starts_with(line, "@else if"))
+		{
+			if (in_if) {
+				IfBranch branch;
+				branch.condition = Statements::parse_statement_condition(line);
+				branch.content = Core::extract_code_section(line);
+				if_stmt.branches.push_back(branch);
+			}
+			else {
+				Utils::throw_err("Error: @else if without matching @if.");
+			}
+		}
+		else if (Utils::starts_with(line, "@else")) {
+			if (in_if) {
+				if_stmt.has_else = true;
+				if_stmt.else_content = Core::extract_code_section(line);
+			}
+			else {
+				Utils::throw_err("Error: @else without matching @if.");
+			}
+		}
+	}
+
+	// Resolve if statement
+	if (in_if) {
+		auto if_vars = Statements::resolve_if_statement(if_stmt, local_vars);
+		local_vars = Vars::merge_vars(local_vars, if_vars);
+		in_if = false;
+		Utils::print_ln("Resolving last if statement.");
+	}
+
 	return local_vars;
 }
 
@@ -187,8 +273,9 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 			content = Utils::replace(content, block.full, "");
 		}
 		auto preprocessed = Vars::preprocess_content(block.content);
-		auto block_vars = Core::parse_block(preprocessed, vars);
-		vars = Vars::merge_vars(vars, block_vars);
+		auto statements = Core::split_statements(preprocessed);
+		auto statement_vars = Core::parse_statements(statements, vars);
+		vars = Vars::merge_vars(vars, statement_vars);
 	}
 
 	content = resolve_placeholders(content, vars);
@@ -408,6 +495,84 @@ std::string Core::resolve_placeholders(const std::string& content, const std::ma
 
 	for (const auto& [placeholder, var_val] : results) {
 		result = Utils::replace(result, placeholder, var_val.value);
+	}
+
+	return result;
+}
+
+std::vector<std::string> Core::split_statements(const std::string& input)
+{
+	vector<string> result;
+	string current;
+	int brace_level = 0;
+
+	char quote_char = '\0';
+	bool in_quotes = false;
+
+	for (size_t i = 0; i < input.length(); ++i) {
+		char c = input[i];
+		current.push_back(c);
+
+		if ((c == '"' || c == '\'') && (quote_char == '\0' || quote_char == c)) {
+			quote_char = (quote_char == '\0') ? c : '\0';
+		}
+
+		if (quote_char != '\0') continue;
+
+		if (c == '{') {
+			brace_level++;
+		}
+		else if (c == '}') {
+			brace_level--;
+			if (brace_level == 0) {
+				result.push_back(Utils::trim(current));
+				current.clear();
+			}
+		}
+		else if (c == ';' && brace_level == 0) {
+			result.push_back(Utils::trim(current));
+			current.clear();
+		}
+	}
+
+	if (!current.empty()) {
+		result.push_back(Utils::trim(current));
+	}
+
+	return result;
+}
+
+/// <summary>
+/// Extract code section within the first level of braces
+/// </summary>
+/// <param name="input"></param>
+/// <returns></returns>
+std::string Core::extract_code_section(const std::string& input)
+{
+	string result;
+	int brace_level = 0;
+	bool in_quote = false;
+
+	for (size_t i = 0; i < input.length(); ++i) {
+		char c = input[i];
+
+		if (c == '"' || c == '\'') {
+			in_quote = !in_quote;
+		}
+
+		if (!in_quote) {
+			if (c == '{') {
+				brace_level++;
+				if (brace_level == 1) continue; // Skip the opening brace
+			}
+			else if (c == '}') {
+				brace_level--;
+				if (brace_level == 0) break; // Stop at the closing brace
+			}
+		}
+		if (brace_level > 0) {
+			result.push_back(c);
+		}
 	}
 
 	return result;
