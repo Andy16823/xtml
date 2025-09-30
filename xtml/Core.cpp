@@ -532,6 +532,7 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 		else if (Utils::starts_with(line, "@if")) {
 			if (in_if) {
 				auto if_node = std::make_unique<IfStatementNode>(if_stmt);
+				if_node->parse_braches();
 				nodes.push_back(std::move(if_node));
 				in_if = false;
 			}
@@ -559,6 +560,7 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 				if_stmt.has_else = true;
 				if_stmt.else_content = Core::extract_code_section(line);
 				auto node = std::make_unique<IfStatementNode>(if_stmt);
+				node->parse_braches();
 				nodes.push_back(std::move(node));
 				in_if = false;
 				if_stmt = IfStatement();
@@ -571,6 +573,7 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 	// Resolve if statement
 	if (in_if) {
 		auto if_node = std::make_unique<IfStatementNode>(if_stmt);
+		if_node->parse_braches();
 		nodes.push_back(std::move(if_node));
 		in_if = false;
 		Utils::print_ln("Resolving last if statement.");

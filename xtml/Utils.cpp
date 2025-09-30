@@ -4,6 +4,8 @@
 #include <iostream>  
 #include <fstream>
 #include <sstream> 
+#include <chrono>
+#include <random>
 
 using namespace std;
 
@@ -155,6 +157,28 @@ bool Utils::is_path_absolute(const std::string& path)
 		return true; // Windows absolute path (e.g., C:\)
 	}
 	return false;
+}
+
+std::string Utils::generate_uuid()
+{
+	int seed = std::chrono::steady_clock::now().time_since_epoch().count();
+	static std::mt19937 rng(seed);
+	std::uniform_int_distribution<int> dist(0, 61);
+
+	const char charset[] =
+		"0123456789"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz";
+
+	std::string result(36, ' ');
+	for (int i = 0; i < 36; ++i) {
+		if (i == 8 || i == 13 || i == 18 || i == 23)
+			result[i] = '-';
+		else
+			result[i] = charset[dist(rng)];
+	}
+	
+	return result;
 }
 
 std::string Utils::parse_parantheses(const std::string& str)

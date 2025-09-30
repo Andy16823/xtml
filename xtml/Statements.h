@@ -3,6 +3,9 @@
 #include <vector>
 #include <map>
 #include "Vars.h"
+#include <memory>
+
+class ASTNode;
 
 enum ConditionOp {
 	OP_AND,
@@ -13,12 +16,14 @@ enum ConditionOp {
 struct IfBranch {
 	std::string condition;
 	std::string content;
+	std::string uuid;
 };
 
 struct IfStatement {
 	std::vector<IfBranch> branches;
 	bool has_else = false;
 	std::string else_content;
+	std::string uuid;
 };
 
 

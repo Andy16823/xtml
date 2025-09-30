@@ -70,10 +70,11 @@ class IfStatementNode : public ASTNode
 {
 private:
 	IfStatement m_if_stmt;
-
+	std::map<std::string, std::vector<std::unique_ptr<ASTNode>>> m_branch_nodes;
 public:
 	IfStatementNode(const IfStatement& if_stmt) : m_if_stmt(if_stmt) {}
 	std::string evaluate(std::map<std::string, var>& vars) override;
+	void parse_braches();
 };
 
 class TextNode : public ASTNode

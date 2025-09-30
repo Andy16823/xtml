@@ -24,6 +24,7 @@ static std::string replace(const std::string& str, const std::string& from, cons
 static bool starts_with(const std::string& str, const std::string& prefix);
 static bool ends_with(const std::string& str, const std::string& suffix);
 static bool is_path_absolute(const std::string& path);
+static std::string generate_uuid();
 
 
 // Parsers
