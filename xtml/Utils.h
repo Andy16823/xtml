@@ -24,4 +24,8 @@ static std::string replace(const std::string& str, const std::string& from, cons
 static bool starts_with(const std::string& str, const std::string& prefix);
 static bool ends_with(const std::string& str, const std::string& suffix);
 static bool is_path_absolute(const std::string& path);
+
+
+// Parsers
+static std::string parse_parantheses(const std::string& str); // Parse content within the first matching parentheses
 };

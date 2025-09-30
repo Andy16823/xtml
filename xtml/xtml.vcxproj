@@ -241,6 +241,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ASTNode.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="FunctionRegistry.cpp" />
     <ClCompile Include="Include.cpp" />
@@ -251,6 +252,7 @@
     <ClCompile Include="xtml.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ASTNode.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="FunctionRegistry.h" />
     <ClInclude Include="Globals.h" />

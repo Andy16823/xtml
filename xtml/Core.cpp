@@ -68,91 +68,6 @@ map<string, var> Core::parse_block(const std::string& content, map<string, var>&
 }
 
 /// <summary>
-/// Interperter pass
-/// </summary>
-/// <param name="statements"></param>
-/// <param name="vars"></param>
-/// <returns></returns>
-std::map<std::string, var> Core::parse_statements(const std::vector<std::string>& statements, std::map<std::string, var>& vars)
-{
-	map<string, var> local_vars;
-	local_vars.insert(vars.begin(), vars.end());
-
-	bool in_if = false;
-	IfStatement if_stmt;
-
-	// Parse each statement for variable declarations
-	for (const auto& stmt : statements) {
-		auto line = Utils::trim(stmt);
-
-		if (Utils::starts_with(line, "@var")) {
-			if (in_if) {
-				auto if_vars = Statements::resolve_if_statement(if_stmt, local_vars);
-				local_vars = Vars::merge_vars(local_vars, if_vars);
-				in_if = false;
-				if_stmt = IfStatement();
-			}
-			// Parse simple @var declarations
-			line = Vars::trim_var(line); // Todo: refactor to work with semicolons in strings
-			auto [key, value] = Vars::parse_var(line);
-			auto varval = Vars::eval_expr(value, local_vars);
-
-			if (!key.empty() && varval.type != DT_UNKNOWN) {
-				local_vars[key] = varval;
-			}
-			else {
-				Utils::throw_err("Error: Failed to parse variable declaration: " + line);
-			}
-		}
-		else if (Utils::starts_with(line, "@if")) {
-			if (in_if) {
-				auto if_vars = Statements::resolve_if_statement(if_stmt, local_vars);
-				local_vars = Vars::merge_vars(local_vars, if_vars);
-				in_if = false;
-				if_stmt = IfStatement();
-			}
-			in_if = true;
-			if_stmt = IfStatement();
-			IfBranch branch;
-			branch.condition = Statements::parse_statement_condition(line);
-			branch.content = Core::extract_code_section(line);
-			if_stmt.branches.push_back(branch);
-		}
-		else if (Utils::starts_with(line, "@else if"))
-		{
-			if (in_if) {
-				IfBranch branch;
-				branch.condition = Statements::parse_statement_condition(line);
-				branch.content = Core::extract_code_section(line);
-				if_stmt.branches.push_back(branch);
-			}
-			else {
-				Utils::throw_err("Error: @else if without matching @if.");
-			}
-		}
-		else if (Utils::starts_with(line, "@else")) {
-			if (in_if) {
-				if_stmt.has_else = true;
-				if_stmt.else_content = Core::extract_code_section(line);
-			}
-			else {
-				Utils::throw_err("Error: @else without matching @if.");
-			}
-		}
-	}
-
-	// Resolve if statement
-	if (in_if) {
-		auto if_vars = Statements::resolve_if_statement(if_stmt, local_vars);
-		local_vars = Vars::merge_vars(local_vars, if_vars);
-		in_if = false;
-		Utils::print_ln("Resolving last if statement.");
-	}
-
-	return local_vars;
-}
-
-/// <summary>
 /// Resolve an include directive
 /// </summary>
 /// <param name="include_path"></param>
@@ -250,11 +165,14 @@ string Core::build_file(const string& path, map<string, var>& vars)
 /// <param name="base_path"></param>
 /// <param name="vars"></param>
 /// <returns></returns>
-string Core::build_content(string& content, string base_path, map<string, var>& vars)
+std::string Core::build_content(string& content, string base_path, map<string, var>& vars)
 {
-	// Parse variables from <xtml> blocks
+	auto ast_root = std::make_unique<ASTRoot>();
+	ast_root->merge_vars(vars); // Initialize with global vars
+
 	auto blocks = Core::find_xtml_tags(content);
 	for (const auto& block : blocks) {
+		auto block_node = std::make_unique<BlockNode>();
 		if (block.self_closing && block.attributes.find("include") != block.attributes.end()) {
 			bool resolve_global = true;
 			if (block.attributes.find("resolve") != block.attributes.end()) {
@@ -264,21 +182,31 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 				}
 			}
 			auto include_path = base_path + "\\" + Utils::trim(block.attributes.at("include"));
-			auto include_content = Core::resolve_include(include_path, vars, block, resolve_global);
+			auto include_content = Core::resolve_include(include_path, ast_root->vars, block, resolve_global);
 			content = Utils::replace(content, block.full, include_content);
 		}
 		else if (block.self_closing && block.attributes.find("define") != block.attributes.end()) {
+			// Resolve self-closing var declaration later Todo
 			auto [var_key, var_value] = Core::resolve_self_closing_var(block);
 			vars[var_key] = var_value;
 			content = Utils::replace(content, block.full, "");
 		}
+
 		auto preprocessed = Vars::preprocess_content(block.content);
 		auto statements = Core::split_statements(preprocessed);
-		auto statement_vars = Core::parse_statements(statements, vars);
-		vars = Vars::merge_vars(vars, statement_vars);
+		auto childs = parse_ast_statements(statements);
+		for (auto& child : childs) {
+			block_node->add_child(move(child));
+		}
+		ast_root->add_child(move(block_node));
+
+		// Evaluate AST to resolve includes and var declarations
+		auto test = ast_root->evaluate();
+		content = Utils::replace(content, block.full, test);
+		// Exchange content with evaluated content
 	}
 
-	content = resolve_placeholders(content, vars);
+	content = resolve_placeholders(content, ast_root->vars);
 
 	// Check for unresolved variables
 	auto unresolved = Core::find_unresolved_vars(content);
@@ -294,6 +222,7 @@ string Core::build_content(string& content, string base_path, map<string, var>& 
 	content = clean_content(content);
 	content = Core::remove_blocks(content, "<xtml>", "</xtml>");
 	content = Utils::trim(content);
+
 
 	Utils::print_ln("Build completed.");
 	return content;
@@ -577,3 +506,77 @@ std::string Core::extract_code_section(const std::string& input)
 
 	return result;
 }
+
+std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<std::string>& statements)
+{
+	vector<unique_ptr<ASTNode>> nodes;
+	bool in_if = false;
+	IfStatement if_stmt;
+
+	// Parse each statement for variable declarations
+	for (const auto& stmt : statements) {
+		auto line = Utils::trim(stmt);
+
+		if (Utils::starts_with(line, "@var")) {
+			// Parse simple @var declarations
+			line = Vars::trim_var(line);
+			auto [key, value] = Vars::parse_var(line);
+			auto node = std::make_unique<VarDeclNode>(key, value);
+			nodes.push_back(std::move(node));
+		}
+		else if (Utils::starts_with(line, "@print")) {
+			// Handle print statements later Todo
+			auto condition = Utils::parse_parantheses(line);
+			auto node = std::make_unique<TextNode>(condition);
+			nodes.push_back(std::move(node));
+		}
+		else if (Utils::starts_with(line, "@if")) {
+			if (in_if) {
+				auto if_node = std::make_unique<IfStatementNode>(if_stmt);
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
+			in_if = true;
+			if_stmt = IfStatement();
+			IfBranch branch;
+			branch.condition = Utils::parse_parantheses(line);
+			branch.content = Core::extract_code_section(line);
+			if_stmt.branches.push_back(branch);
+		}
+		else if (Utils::starts_with(line, "@else if"))
+		{
+			if (in_if) {
+				IfBranch branch;
+				branch.condition = Utils::parse_parantheses(line);
+				branch.content = Core::extract_code_section(line);
+				if_stmt.branches.push_back(branch);
+			}
+			else {
+				Utils::throw_err("Error: @else if without matching @if.");
+			}
+		}
+		else if (Utils::starts_with(line, "@else")) {
+			if (in_if) {
+				if_stmt.has_else = true;
+				if_stmt.else_content = Core::extract_code_section(line);
+				auto node = std::make_unique<IfStatementNode>(if_stmt);
+				nodes.push_back(std::move(node));
+				in_if = false;
+				if_stmt = IfStatement();
+			}
+			else {
+				Utils::throw_err("Error: @else without matching @if.");
+			}
+		}
+	}
+	// Resolve if statement
+	if (in_if) {
+		auto if_node = std::make_unique<IfStatementNode>(if_stmt);
+		nodes.push_back(std::move(if_node));
+		in_if = false;
+		Utils::print_ln("Resolving last if statement.");
+	}
+
+	return nodes;
+}
+

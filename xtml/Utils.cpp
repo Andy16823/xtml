@@ -3,7 +3,9 @@
 #include <algorithm>  
 #include <iostream>  
 #include <fstream>
-#include <sstream>  
+#include <sstream> 
+
+using namespace std;
 
 bool Utils::is_number(const std::string& s)
 {  
@@ -153,4 +155,37 @@ bool Utils::is_path_absolute(const std::string& path)
 		return true; // Windows absolute path (e.g., C:\)
 	}
 	return false;
+}
+
+std::string Utils::parse_parantheses(const std::string& str)
+{
+	string current;
+	bool in_quotes = false;
+	int paren_depth = 0;
+
+	for (char c : str) {
+		if (c == '"' || c == '\'') {
+			in_quotes = !in_quotes;
+			current += c;
+			continue;
+		}
+
+		if (!in_quotes) {
+			if (c == '(') {
+				paren_depth++;
+				if (paren_depth == 1) continue; // Skip the opening parenthesis
+			}
+			else if (c == ')') {
+				paren_depth--;
+				if (paren_depth == 0) break; // Stop at the closing parenthesis
+			}
+		}
+
+		if (paren_depth > 0) {
+			current.push_back(c);
+		}
+
+	}
+
+	return Utils::trim(current);
 }

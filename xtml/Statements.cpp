@@ -236,81 +236,25 @@ bool Statements::resolve_condition(const std::string& condition, const std::map<
 	return false;
 }
 
-/// <summary>
-/// Parse the condition part of an if/elseif statement
-/// </summary>
-/// <param name="statement"></param>
-/// <returns></returns>
-std::string Statements::parse_statement_condition(const std::string& statement)
+
+bool Statements::evaluate_condition(const std::string& condition_str, const std::string& content_str, std::map<std::string, var>& vars)
 {
-	string current;
-	bool in_quotes = false;
-	int paren_depth = 0;
-
-	for (char c : statement) {
-		if (c == '"' || c == '\'') {
-			in_quotes = !in_quotes;
-			current += c;
-			continue;
-		}
-
-		if (!in_quotes) {
-			if (c == '(') {
-				paren_depth++;
-				if (paren_depth == 1) continue; // Skip the opening parenthesis
-			}
-			else if (c == ')') {
-				paren_depth--;
-				if (paren_depth == 0) break; // Stop at the closing parenthesis
-			}
-		}
-
-		if (paren_depth > 0) {
-			current.push_back(c);
-		}
-
-	}
-	
-	return Utils::trim(current);
-}
-
-/// <summary>
-/// Resolve an if statement with branches and optional else
-/// </summary>
-/// <param name="if_stmt"></param>
-/// <param name="vars"></param>
-/// <returns></returns>
-std::map<std::string, var> Statements::resolve_if_statement(const IfStatement& if_stmt, std::map<std::string, var>& vars)
-{
-	for (const auto& branch : if_stmt.branches) {
-		auto condition = Utils::trim(branch.condition);
-		if (condition.empty()) {
-			Utils::throw_err("Error: Empty condition in if statement.");
-			continue;
-		}
-		// Todo : Handle && and || operators
-		vector<bool> cond_results;
-		auto conditions = split_conditions(condition);
-		auto ops = parse_condition_ops(condition);
-
-		bool final_result = resolve_conditions(conditions, ops, vars);
-
-		// If condition met, process this branch
-		if (final_result) {
-			Utils::print_ln("Condition met: " + condition + ", processing branch.");
-			auto statements = Core::split_statements(branch.content);
-			auto branch_vars = Core::parse_statements(statements, vars);
-			return branch_vars;
-		}
+	auto condition = Utils::trim(condition_str);
+	if (condition.empty()) {
+		Utils::throw_err("Error: Empty condition in if statement.");
+		return false;
 	}
 
-	if (if_stmt.has_else) {
-		Utils::print_ln("No if conditions met, processing else branch.");
-		auto statements = Core::split_statements(if_stmt.else_content);
-		auto else_vars = Core::parse_statements(statements, vars);
-		return else_vars;
-	}
+	vector<bool> cond_results;
+	auto conditions = split_conditions(condition);
+	auto ops = parse_condition_ops(condition);
+	bool final_result = resolve_conditions(conditions, ops, vars);
 
-	Utils::print_ln("No if conditions met, no else branch.");
-	return std::map<std::string, var>();
+	if (final_result) {
+		Utils::print_ln("Condition met: " + condition + ", processing branch.");
+		return true;
+		//auto statements = Core::split_statements(branch.content);
+		//auto branch_vars = Core::parse_statements(statements, vars);
+		//return branch_vars;
+	}
 }
