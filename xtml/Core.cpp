@@ -198,11 +198,10 @@ std::string Core::build_content(string& content, string base_path, map<string, v
 		for (auto& child : childs) {
 			block_node->add_child(move(child));
 		}
-		ast_root->add_child(move(block_node));
-
 		// Evaluate AST to resolve includes and var declarations
-		auto test = ast_root->evaluate();
-		content = Utils::replace(content, block.full, test);
+		auto evaluated_block = block_node->evaluate(ast_root->vars);
+		content = Utils::replace(content, block.full, evaluated_block);
+		ast_root->add_child(move(block_node));
 		// Exchange content with evaluated content
 	}
 

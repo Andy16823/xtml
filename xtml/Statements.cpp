@@ -257,4 +257,5 @@ bool Statements::evaluate_condition(const std::string& condition_str, const std:
 		//auto branch_vars = Core::parse_statements(statements, vars);
 		//return branch_vars;
 	}
+	return false;
 }

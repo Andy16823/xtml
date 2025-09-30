@@ -38,6 +38,7 @@ std::string BlockNode::evaluate(std::map<std::string, var>& vars)
 std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 {
 	// Resolve statement and pushback new children for the met branch
+	bool resolved = false;
 	for (auto& if_branch : m_if_stmt.branches) {
 		Utils::print_ln("If branch condition: " + if_branch.condition);
 		if (Statements::evaluate_condition(if_branch.condition, if_branch.content, vars)) {
@@ -47,7 +48,18 @@ std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 			for (auto& child : child_branches) {
 				this->children.push_back(move(child));
 			}
+			resolved = true;
 			break;
+		}
+	}
+
+	// Else branch
+	if (!resolved && m_if_stmt.has_else) {
+		Utils::print_ln("No conditions met, processing else branch.");
+		auto statements = Core::split_statements(m_if_stmt.else_content);
+		auto child_branches = Core::parse_ast_statements(statements);
+		for (auto& child : child_branches) {
+			this->children.push_back(move(child));
 		}
 	}
 
