@@ -531,7 +531,8 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@if")) {
-			if (if_node != nullptr) {
+			if (in_if) {
+				// Close previous if
 				nodes.push_back(std::move(if_node));
 				in_if = false;
 			}
