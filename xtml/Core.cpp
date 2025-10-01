@@ -510,7 +510,8 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 {
 	vector<unique_ptr<ASTNode>> nodes;
 	bool in_if = false;
-	IfStatement if_stmt;
+	
+	auto if_node = std::make_unique<IfStatementNode>();
 
 	// Parse each statement for variable declarations
 	for (const auto& stmt : statements) {
@@ -530,26 +531,18 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@if")) {
-			if (in_if) {
-				auto if_node = std::make_unique<IfStatementNode>(if_stmt);
-				if_node->parse_braches();
+			if (if_node != nullptr) {
 				nodes.push_back(std::move(if_node));
 				in_if = false;
 			}
 			in_if = true;
-			if_stmt = IfStatement();
-			IfBranch branch;
-			branch.condition = Utils::parse_parantheses(line);
-			branch.content = Core::extract_code_section(line);
-			if_stmt.branches.push_back(branch);
+			if_node = std::make_unique<IfStatementNode>();
+			if_node->add_branch(Utils::parse_parantheses(line), Core::extract_code_section(line));
 		}
 		else if (Utils::starts_with(line, "@else if"))
 		{
 			if (in_if) {
-				IfBranch branch;
-				branch.condition = Utils::parse_parantheses(line);
-				branch.content = Core::extract_code_section(line);
-				if_stmt.branches.push_back(branch);
+				if_node->add_branch(Utils::parse_parantheses(line), Core::extract_code_section(line));
 			}
 			else {
 				Utils::throw_err("Error: @else if without matching @if.");
@@ -557,13 +550,9 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 		}
 		else if (Utils::starts_with(line, "@else")) {
 			if (in_if) {
-				if_stmt.has_else = true;
-				if_stmt.else_content = Core::extract_code_section(line);
-				auto node = std::make_unique<IfStatementNode>(if_stmt);
-				node->parse_braches();
-				nodes.push_back(std::move(node));
+				if_node->add_else(Core::extract_code_section(line));
+				nodes.push_back(std::move(if_node));
 				in_if = false;
-				if_stmt = IfStatement();
 			}
 			else {
 				Utils::throw_err("Error: @else without matching @if.");
@@ -571,12 +560,8 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 		}
 	}
 	// Resolve if statement
-	if (in_if) {
-		auto if_node = std::make_unique<IfStatementNode>(if_stmt);
-		if_node->parse_braches();
+	if (in_if && !if_node->is_empty()) {
 		nodes.push_back(std::move(if_node));
-		in_if = false;
-		Utils::print_ln("Resolving last if statement.");
 	}
 
 	return nodes;

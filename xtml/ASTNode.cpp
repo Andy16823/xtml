@@ -35,19 +35,53 @@ std::string BlockNode::evaluate(std::map<std::string, var>& vars)
 	return result;
 }
 
+void IfStatementNode::parse_branch(Branch& branch)
+{
+	auto statements = Core::split_statements(branch.content);
+	auto childs = Core::parse_ast_statements(statements);
+	for (auto& child : childs) {
+		branch.children.push_back(std::move(child));
+	}
+}
+
+IfStatementNode::IfStatementNode()
+{
+	this->m_has_else = false;
+}
+
+void IfStatementNode::add_branch(std::string condition, std::string content)
+{
+	Branch elif_branch;
+	elif_branch.condition = condition;
+	elif_branch.content = content;
+	this->parse_branch(elif_branch);
+	this->m_branches.push_back(std::move(elif_branch));
+}
+
+void IfStatementNode::add_else(std::string content)
+{
+	this->m_has_else = true;
+	this->m_else_branch.content = content;
+	this->m_else_branch.condition = "else";
+
+	auto statements = Core::split_statements(content);
+	auto childs = Core::parse_ast_statements(statements);
+	for (auto& child : childs) {
+		this->m_else_branch.children.push_back(std::move(child));
+	}
+}
+
 std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 {
 	// Evaluate children
 	std::string result;
 
 	bool resolved = false;
-	for (auto& if_branch : m_if_stmt.branches) {
+	for (auto& if_branch : this->m_branches) {
 		Utils::print_ln("If branch condition: " + if_branch.condition);
 		if (Statements::evaluate_condition(if_branch.condition, if_branch.content, vars)) {
 			Utils::print_ln("Condition met, processing branch content.");
-
-			auto& children = m_branch_nodes[if_branch.uuid];
-			for (auto& child : children) {
+			for (auto& child : if_branch.children) {
 				result += child->evaluate(vars);
 			}
 			resolved = true;
@@ -56,37 +90,13 @@ std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 	}
 
 	// Else branch
-	if (!resolved && m_if_stmt.has_else) {
+	if (!resolved && this->m_has_else) {
 		Utils::print_ln("No conditions met, processing else branch.");
-
-		auto& children = m_branch_nodes[m_if_stmt.uuid];
-		for (auto& child : children) {
+		for (auto& child : this->m_else_branch.children) {
 			result += child->evaluate(vars);
 		}
 	}
-
 	return result;
-}
-
-void IfStatementNode::parse_braches()
-{
-	for (auto& if_branch : m_if_stmt.branches) {
-		if (if_branch.uuid.empty()) {
-			if_branch.uuid = Utils::generate_uuid();
-		}
-		auto statements = Core::split_statements(if_branch.content);
-		auto childs = Core::parse_ast_statements(statements);
-		this->m_branch_nodes[if_branch.uuid] = std::move(childs);
-	}
-
-	if (m_if_stmt.has_else) {
-		if (m_if_stmt.uuid.empty()) {
-			m_if_stmt.uuid = Utils::generate_uuid();
-		}
-		auto statements = Core::split_statements(m_if_stmt.else_content);
-		auto childs = Core::parse_ast_statements(statements);
-		this->m_branch_nodes[m_if_stmt.uuid] = std::move(childs);
-	}
 }
 
 std::string TextNode::evaluate(std::map<std::string, var>& vars)

@@ -68,13 +68,26 @@ public:
 
 class IfStatementNode : public ASTNode
 {
+	struct Branch
+	{
+		std::string condition;
+		std::string content;
+		std::vector<std::unique_ptr<ASTNode>> children;
+	};
+
 private:
-	IfStatement m_if_stmt;
-	std::map<std::string, std::vector<std::unique_ptr<ASTNode>>> m_branch_nodes;
+	std::vector<Branch> m_branches;
+	bool m_has_else = false;
+	Branch m_else_branch;
+
+	void parse_branch(Branch& branch);
 public:
-	IfStatementNode(const IfStatement& if_stmt) : m_if_stmt(if_stmt) {}
+	IfStatementNode();
+	void add_branch(std::string condition, std::string content);
+	void add_else(std::string content);
+	bool is_empty() const { return m_branches.empty() && !m_has_else; }
+
 	std::string evaluate(std::map<std::string, var>& vars) override;
-	void parse_braches();
 };
 
 class TextNode : public ASTNode

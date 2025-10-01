@@ -13,20 +13,6 @@ enum ConditionOp {
 	OP_NONE
 };
 
-struct IfBranch {
-	std::string condition;
-	std::string content;
-	std::string uuid;
-};
-
-struct IfStatement {
-	std::vector<IfBranch> branches;
-	bool has_else = false;
-	std::string else_content;
-	std::string uuid;
-};
-
-
 class Statements
 {
 	
