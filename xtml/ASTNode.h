@@ -98,3 +98,14 @@ public:
 	TextNode(const std::string& value) : m_value(value) {}
 	std::string evaluate(std::map<std::string, var>& vars) override;
 };
+
+class WhileNode : public ASTNode
+{
+private:
+	std::string m_condition;
+	std::vector<std::unique_ptr<ASTNode>> m_body;
+public:
+	WhileNode(const std::string& condition, const std::string& body);
+
+	std::string evaluate(std::map<std::string, var>& vars) override;
+};

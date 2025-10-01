@@ -107,3 +107,28 @@ std::string TextNode::evaluate(std::map<std::string, var>& vars)
 	}
 	return std::string();
 }
+
+WhileNode::WhileNode(const std::string& condition, const std::string& body)
+{
+	m_condition = condition;
+	auto statments = Core::split_statements(body);
+	auto childs = Core::parse_ast_statements(statments);
+	for (auto& child : childs) {
+		children.push_back(std::move(child));
+	}
+	Utils::printerr_ln("WhileNode created with condition: " + children.size());
+}
+
+std::string WhileNode::evaluate(std::map<std::string, var>& vars)
+{
+	Utils::printerr_ln("Evaluating WhileNode with condition: " + m_condition);
+	std::string result;
+	while (Statements::evaluate_condition(m_condition, "", vars)) {
+		Utils::printerr_ln("While condition met, processing body.");
+		for (auto& child : children) {
+			result += child->evaluate(vars);
+		}
+	}
+
+	return result;
+}
