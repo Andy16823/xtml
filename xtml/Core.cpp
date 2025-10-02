@@ -433,6 +433,7 @@ std::vector<std::string> Core::split_statements(const std::string& input)
 	vector<string> result;
 	string current;
 	int brace_level = 0;
+	int paren_level = 0;
 
 	char quote_char = '\0';
 	bool in_quotes = false;
@@ -447,17 +448,24 @@ std::vector<std::string> Core::split_statements(const std::string& input)
 
 		if (quote_char != '\0') continue;
 
+		if (c == '(') {
+			paren_level++;
+		}
+		else if (c == ')') {
+			paren_level--;
+		}
+
 		if (c == '{') {
 			brace_level++;
 		}
 		else if (c == '}') {
 			brace_level--;
-			if (brace_level == 0) {
+			if (brace_level == 0 && paren_level == 0) {
 				result.push_back(Utils::trim(current));
 				current.clear();
 			}
 		}
-		else if (c == ';' && brace_level == 0) {
+		else if (c == ';' && brace_level == 0 && paren_level == 0) {
 			result.push_back(Utils::trim(current));
 			current.clear();
 		}
@@ -534,6 +542,12 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 			auto condition = Utils::parse_parantheses(line);
 			auto body = Core::extract_code_section(line);
 			auto node = std::make_unique<WhileNode>(condition, body);
+			nodes.push_back(std::move(node));
+		}
+		else if (Utils::starts_with(line, "@for")) {
+			auto condition = Utils::parse_parantheses(line);
+			auto body = Core::extract_code_section(line);
+			auto node = std::make_unique<ForNode>(condition, body);
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@if")) {

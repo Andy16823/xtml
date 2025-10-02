@@ -132,3 +132,56 @@ std::string WhileNode::evaluate(std::map<std::string, var>& vars)
 
 	return result;
 }
+
+void ForNode::parse_loop(const std::string& loop_expr, const std::string& body)
+{
+
+}
+
+ForNode::ForNode(const std::string& loop_expr, const std::string& body)
+{
+	auto expressions = Core::split_statements(loop_expr);
+	if (expressions.size() != 3) {
+		Utils::throw_err("Error: Invalid for loop expression: " + loop_expr);
+		return;
+	}
+	m_init = Vars::trim_var(expressions[0]);
+	m_condition = Vars::trim_var(expressions[1]);
+	m_increment = Vars::trim_var(expressions[2]);
+
+	auto statments = Core::split_statements(body);
+	auto childs = Core::parse_ast_statements(statments);
+	for (auto& child : childs) {
+		children.push_back(std::move(child));
+	}
+}
+
+std::string ForNode::evaluate(std::map<std::string, var>& vars)
+{
+	// 1. Prepare the loop variable
+	auto [key, value] = Vars::parse_var(m_init);
+	auto var = Vars::eval_expr(value, vars);
+	if (var.type == DT_UNKNOWN) {
+		Utils::throw_err("Error: Failed to evaluate for loop init expression: " + m_init);
+		return std::string();
+	}
+	vars[key] = var;
+
+	// 2. Execute the loop
+	std::string result;
+	while (Statements::evaluate_condition(m_condition, "", vars)) {
+		for (auto& child : children) {
+			result += child->evaluate(vars);
+		}
+
+		auto [inc_key, inc_value] = Vars::parse_var(m_increment);
+		auto inc_var = Vars::eval_expr(inc_value, vars);
+		if (inc_var.type == DT_UNKNOWN) {
+			Utils::throw_err("Error: Failed to evaluate for loop increment expression: " + m_increment);
+			return std::string();
+		}
+		vars[inc_key] = inc_var;
+	}
+
+	return result;
+}

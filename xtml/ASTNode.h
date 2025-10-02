@@ -91,7 +91,7 @@ public:
 };
 
 class TextNode : public ASTNode
-{	
+{
 private:
 	std::string m_value;
 public:
@@ -107,5 +107,20 @@ private:
 public:
 	WhileNode(const std::string& condition, const std::string& body);
 
+	std::string evaluate(std::map<std::string, var>& vars) override;
+};
+
+class ForNode : public ASTNode
+{
+private:
+	std::string m_init;
+	std::string m_condition;
+	std::string m_increment;
+	std::vector<std::unique_ptr<ASTNode>> m_body;
+
+	void parse_loop(const std::string& loop_expr, const std::string& body);
+
+public:
+	ForNode(const std::string& loop_expr, const std::string& body);
 	std::string evaluate(std::map<std::string, var>& vars) override;
 };
