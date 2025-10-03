@@ -200,7 +200,7 @@ std::string Core::build_content(string& content, string base_path, map<string, v
 		}
 		// Evaluate AST to resolve includes and var declarations
 		auto evaluated_block = block_node->evaluate(ast_root->vars);
-		content = Utils::replace(content, block.full, evaluated_block);
+		content = Utils::replace(content, block.full, evaluated_block.content);
 		ast_root->add_child(move(block_node));
 		// Exchange content with evaluated content
 	}
@@ -526,31 +526,49 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 		auto line = Utils::trim(stmt);
 
 		if (Utils::starts_with(line, "@var")) {
-			// Parse simple @var declarations
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			line = Vars::trim_var(line);
 			auto [key, value] = Vars::parse_var(line);
 			auto node = std::make_unique<VarDeclNode>(key, value);
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@print")) {
-			// Handle print statements later Todo
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			auto condition = Utils::parse_parantheses(line);
 			auto node = std::make_unique<TextNode>(condition);
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@while")) {
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			auto condition = Utils::parse_parantheses(line);
 			auto body = Core::extract_code_section(line);
 			auto node = std::make_unique<WhileNode>(condition, body);
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@foreach")) {
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			auto condition = Utils::parse_parantheses(line);
 			auto body = Core::extract_code_section(line);
 			auto node = std::make_unique<ForEachNode>(condition, body);
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@for")) {
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			auto condition = Utils::parse_parantheses(line);
 			auto body = Core::extract_code_section(line);
 			auto node = std::make_unique<ForNode>(condition, body);
@@ -558,7 +576,6 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 		}
 		else if (Utils::starts_with(line, "@if")) {
 			if (in_if) {
-				// Close previous if
 				nodes.push_back(std::move(if_node));
 				in_if = false;
 			}
@@ -586,10 +603,18 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 			}
 		}
 		else if (Utils::starts_with(line, "@break")) {
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			auto node = std::make_unique<BreakNode>();
 			nodes.push_back(std::move(node));
 		}
 		else if (Utils::starts_with(line, "@continue")) {
+			if (in_if) {
+				nodes.push_back(std::move(if_node));
+				in_if = false;
+			}
 			auto node = std::make_unique<ContinueNode>();
 			nodes.push_back(std::move(node));
 		}

@@ -6,15 +6,27 @@
 #include <vector>
 #include "Statements.h"
 
+
+
+struct EvalResult {
+	std::string content;
+	bool should_break = false;
+	bool should_continue = false;
+};
+
+
 /// <summary>
 /// Default AST Node
 /// </summary>
 class ASTNode
 {
+protected:
+	virtual EvalResult merge_results(const EvalResult& a, const EvalResult& b);
+
 public:
 	std::vector<std::unique_ptr<ASTNode>> children;
 	virtual ~ASTNode() = default;
-	virtual std::string evaluate(std::map<std::string, var>& vars) = 0;
+	virtual EvalResult evaluate(std::map<std::string, var>& vars) = 0;
 
 	void add_child(std::unique_ptr<ASTNode> child) {
 		children.push_back(move(child));
@@ -30,7 +42,7 @@ public:
 	std::vector<std::unique_ptr<ASTNode>> children;
 	std::map<std::string, var> vars;
 	std::string built_content;
-	std::string evaluate();
+	EvalResult evaluate();
 
 	void add_child(std::unique_ptr<ASTNode> child) {
 		children.push_back(move(child));
@@ -49,7 +61,7 @@ public:
 class BlockNode : public ASTNode
 {
 public:
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 
@@ -63,7 +75,7 @@ private:
 	std::string m_expr;
 public:
 	VarDeclNode(const std::string& name, const std::string& expr) : m_name(name), m_expr(expr) {}
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class IfStatementNode : public ASTNode
@@ -87,7 +99,7 @@ public:
 	void add_else(std::string content);
 	bool is_empty() const { return m_branches.empty() && !m_has_else; }
 
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class TextNode : public ASTNode
@@ -96,7 +108,7 @@ private:
 	std::string m_value;
 public:
 	TextNode(const std::string& value) : m_value(value) {}
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class WhileNode : public ASTNode
@@ -107,7 +119,7 @@ private:
 public:
 	WhileNode(const std::string& condition, const std::string& body);
 
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class ForNode : public ASTNode
@@ -121,7 +133,7 @@ private:
 
 public:
 	ForNode(const std::string& loop_expr, const std::string& body);
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class ForEachNode : public ASTNode {
@@ -132,19 +144,19 @@ private:
 	std::tuple<std::string, std::string> parse_declaration(const std::string& declaration);
 public:
 	ForEachNode(const std::string& expression, const std::string& body);
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class BreakNode : public ASTNode
 {
 public:
 	BreakNode() {}
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class ContinueNode : public ASTNode
 {
 public:
 	ContinueNode() {}
-	std::string evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };

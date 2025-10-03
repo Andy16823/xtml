@@ -1,2 +1,4 @@
-﻿  Statements.cpp
+﻿  ASTNode.cpp
+C:\Users\andy1\source\repos\xtml\xtml\ASTNode.cpp(221,41): warning C4305: "Argument": Verkürzung von "int" in "char"
+C:\Users\andy1\source\repos\xtml\xtml\ASTNode.cpp(221,41): warning C4309: "Argument": Verkürzung eines konstanten Wertes
   xtml.vcxproj -> C:\Users\andy1\source\repos\xtml\x64\Debug\xtml.exe

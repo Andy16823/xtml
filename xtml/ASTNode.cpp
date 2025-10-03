@@ -8,29 +8,42 @@
 
 using namespace std;
 
-std::string VarDeclNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b)
+{
+	EvalResult result;
+	result.content = a.content + b.content;
+
+	if (a.should_break || b.should_break) {
+		result.should_break = true;
+	}else if (a.should_continue || b.should_continue) {
+		result.should_continue = true;
+	}
+	return result;
+}
+
+EvalResult VarDeclNode::evaluate(std::map<std::string, var>& vars)
 {
 	var value = Vars::eval_expr(m_expr, vars);
 	if (value.type != DT_UNKNOWN) {
 		vars[m_name] = value;
 	}
-	return "";
+	return EvalResult{};
 }
 
-std::string ASTRoot::evaluate()
+EvalResult ASTRoot::evaluate()
 {
-	std::string result;
+	EvalResult result;
 	for (auto& child : children) {
-		result += child->evaluate(vars);
+		result.content += child->evaluate(vars).content;
 	}
 	return result;
 }
 
-std::string BlockNode::evaluate(std::map<std::string, var>& vars)
+EvalResult BlockNode::evaluate(std::map<std::string, var>& vars)
 {
-	std::string result;
+	EvalResult result;
 	for (auto& child : children) {
-		result += child->evaluate(vars);
+		result = merge_results(result, child->evaluate(vars));
 	}
 	return result;
 }
@@ -71,16 +84,16 @@ void IfStatementNode::add_else(std::string content)
 	}
 }
 
-std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
+EvalResult IfStatementNode::evaluate(std::map<std::string, var>& vars)
 {
 	// Evaluate children
-	std::string result;
+	EvalResult result;
 
 	bool resolved = false;
 	for (auto& if_branch : this->m_branches) {
 		if (Statements::evaluate_condition(if_branch.condition, if_branch.content, vars)) {
 			for (auto& child : if_branch.children) {
-				result += child->evaluate(vars);
+				result = merge_results(result, child->evaluate(vars));
 			}
 			resolved = true;
 			break;
@@ -90,19 +103,20 @@ std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 	// Else branch
 	if (!resolved && this->m_has_else) {
 		for (auto& child : this->m_else_branch.children) {
-			result += child->evaluate(vars);
+			result = merge_results(result, child->evaluate(vars));
 		}
 	}
 	return result;
 }
 
-std::string TextNode::evaluate(std::map<std::string, var>& vars)
+EvalResult TextNode::evaluate(std::map<std::string, var>& vars)
 {
+	EvalResult result;
 	auto value = Vars::eval_expr(m_value, vars);
 	if (value.type != DT_UNKNOWN) {
-		return value.value;
+		result.content = value.value;
 	}
-	return std::string();
+	return result;
 }
 
 WhileNode::WhileNode(const std::string& condition, const std::string& body)
@@ -115,19 +129,24 @@ WhileNode::WhileNode(const std::string& condition, const std::string& body)
 	}
 }
 
-std::string WhileNode::evaluate(std::map<std::string, var>& vars)
+EvalResult WhileNode::evaluate(std::map<std::string, var>& vars)
 {
-	std::string result;
+	EvalResult result;
 	while (Statements::evaluate_condition(m_condition, "", vars)) {
 		for (auto& child : children) {
 			auto child_result = child->evaluate(vars);
-			if (child_result == "@break") {
+			if (child_result.should_break) {
+				result = merge_results(result, child_result);
+				result.should_break = false;
 				return result;
 			}
-			else if (child_result == "@continue") {
+			else if (child_result.should_continue) {
+				result = merge_results(result, child_result);
+				result.should_continue = false;
 				break;
 			}
-			result += child_result;
+
+			result = merge_results(result, child_result);
 		}
 	}
 
@@ -157,36 +176,39 @@ ForNode::ForNode(const std::string& loop_expr, const std::string& body)
 	}
 }
 
-std::string ForNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ForNode::evaluate(std::map<std::string, var>& vars)
 {
 	// 1. Prepare the loop variable
 	auto [key, value] = Vars::parse_var(m_init);
 	auto var = Vars::eval_expr(value, vars);
 	if (var.type == DT_UNKNOWN) {
 		Utils::throw_err("Error: Failed to evaluate for loop init expression: " + m_init);
-		return std::string();
 	}
 	vars[key] = var;
 
 	// 2. Execute the loop
-	std::string result;
+	EvalResult result;
 	while (Statements::evaluate_condition(m_condition, "", vars)) {
 		for (auto& child : children) {
 			auto child_result = child->evaluate(vars);
-			if (child_result == "@break") {
+			if (child_result.should_break) {
+				result = merge_results(result, child_result);
+				result.should_break = false;
 				return result;
 			}
-			else if (child_result == "@continue") {
+			else if (child_result.should_continue) {
+				result = merge_results(result, child_result);
+				result.should_continue = false;
 				break;
 			}
-			result += child_result;
+
+			result = merge_results(result, child_result);
 		}
 
 		auto [inc_key, inc_value] = Vars::parse_var(m_increment);
 		auto inc_var = Vars::eval_expr(inc_value, vars);
 		if (inc_var.type == DT_UNKNOWN) {
 			Utils::throw_err("Error: Failed to evaluate for loop increment expression: " + m_increment);
-			return std::string();
 		}
 		vars[inc_key] = inc_var;
 	}
@@ -218,7 +240,7 @@ ForEachNode::ForEachNode(const std::string& expression, const std::string& body)
 	}
 }
 
-std::string ForEachNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ForEachNode::evaluate(std::map<std::string, var>& vars)
 {
 	var collection_var = Vars::eval_expr(m_collection, vars);
 	if (collection_var.type != DT_ARRAY) {
@@ -226,29 +248,39 @@ std::string ForEachNode::evaluate(std::map<std::string, var>& vars)
 	}
 
 	// Iteralte all elements in the array
-	std::string result;
+	EvalResult result;
 	for (const auto& item : collection_var.array) {
 		vars[m_declaration] = item;
 		for (auto& child : children) {
 			auto child_result = child->evaluate(vars);
-			if (child_result == "@break") {
+			if (child_result.should_break) {
+				result = merge_results(result, child_result);
+				result.should_break = false;
 				return result;
 			}
-			else if (child_result == "@continue") {
+			else if (child_result.should_continue) {
+				result = merge_results(result, child_result);
+				result.should_continue = false;
 				break;
 			}
-			result += child_result;
+
+			result = merge_results(result, child_result);
 		}
 	}
 	return result;
 }
 
-std::string BreakNode::evaluate(std::map<std::string, var>& vars)
+EvalResult BreakNode::evaluate(std::map<std::string, var>& vars)
 {
-	return "@break";
+	EvalResult result;
+	result.should_break = true;
+	return result;
 }
 
-std::string ContinueNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ContinueNode::evaluate(std::map<std::string, var>& vars)
 {
-	return "@continue";
+	EvalResult result;
+	result.should_continue = true;
+	return result;
 }
+
