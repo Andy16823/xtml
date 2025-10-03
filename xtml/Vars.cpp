@@ -285,7 +285,7 @@ var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 			evaledToken = vars.at(token);
 		}
 		else {
-			Utils::throw_err("Error: Unknown token in expression: " + token);
+			Utils::throw_err("Error: Unknown token in expression: " + token, "");
 		}
 
 		// Step 2: Determine how to handle the evaluated token (for this case it's only + operator)

@@ -1,4 +1,6 @@
-﻿  ASTNode.cpp
-C:\Users\andy1\source\repos\xtml\xtml\ASTNode.cpp(221,41): warning C4305: "Argument": Verkürzung von "int" in "char"
-C:\Users\andy1\source\repos\xtml\xtml\ASTNode.cpp(221,41): warning C4309: "Argument": Verkürzung eines konstanten Wertes
+﻿  Vars.cpp
+  xtml.cpp
+  Code wird generiert...
+C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp(393,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\source\repos\xtml\xtml\Vars.cpp(436,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
   xtml.vcxproj -> C:\Users\andy1\source\repos\xtml\x64\Debug\xtml.exe

@@ -10,18 +10,18 @@
 using namespace std;
 
 bool Utils::is_number(const std::string& s)
-{  
-   return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);  
-}  
+{
+	return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
 
 bool Utils::is_alpha(const std::string& s)
-{  
-   return !s.empty() && std::all_of(s.begin(), s.end(), ::isalpha);  
-}  
+{
+	return !s.empty() && std::all_of(s.begin(), s.end(), ::isalpha);
+}
 
-bool Utils::is_string(const std::string& s)  
-{  
-	return !s.empty() && s.front() == '"' && s.back() == '"';  
+bool Utils::is_string(const std::string& s)
+{
+	return !s.empty() && s.front() == '"' && s.back() == '"';
 }
 
 bool Utils::is_bool(const std::string& s)
@@ -32,23 +32,28 @@ bool Utils::is_bool(const std::string& s)
 	return false;
 }
 
-void Utils::print_ln(const std::string& str)  
-{  
-   std::cout << str << std::endl;  
-}  
+void Utils::print_ln(const std::string& str)
+{
+	std::cout << str << std::endl;
+}
 
-void Utils::printerr_ln(const std::string& str)  
-{  
-   std::cerr << str << std::endl;  
+void Utils::printerr_ln(const std::string& str)
+{
+	std::cerr << str << std::endl;
 }
 
 void Utils::throw_err(const std::string& str, const std::string& stack_trace)
-{
-	std::cerr << "Error: " << str << std::endl;
+{	
+	const std::string red = "\033[31m";
+	const std::string reset = "\033[0m";
+
+	std::cerr << red << "Error: " << str << reset << std::endl;
+
 	if (!stack_trace.empty()) {
-		std::cerr << "Stack trace:" << std::endl;
+		std::cerr << red << "Stack trace:" << reset << std::endl;
 		std::cerr << stack_trace << std::endl;
 	}
+
 	throw std::runtime_error(str);
 }
 
@@ -62,18 +67,18 @@ std::string Utils::escape_str(const std::string& str)
 	return result;
 }
 
-std::string Utils::file_name(const std::string& file_path)  
-{  
-   size_t last_slash = file_path.find_last_of("/\\");  
-   if (last_slash == std::string::npos) return file_path;  
-   return file_path.substr(last_slash + 1);  
-}  
+std::string Utils::file_name(const std::string& file_path)
+{
+	size_t last_slash = file_path.find_last_of("/\\");
+	if (last_slash == std::string::npos) return file_path;
+	return file_path.substr(last_slash + 1);
+}
 
-std::string Utils::file_name_no_ext(const std::string& file_name)  
-{  
-   size_t last_dot = file_name.find_last_of('.');  
-   if (last_dot == std::string::npos) return file_name;  
-   return file_name.substr(0, last_dot);  
+std::string Utils::file_name_no_ext(const std::string& file_name)
+{
+	size_t last_dot = file_name.find_last_of('.');
+	if (last_dot == std::string::npos) return file_name;
+	return file_name.substr(0, last_dot);
 }
 
 std::string Utils::file_path_parent(const std::string& file_path)
@@ -84,31 +89,31 @@ std::string Utils::file_path_parent(const std::string& file_path)
 	return "";
 }
 
-std::string Utils::trim(const std::string& str)  
-{  
-   size_t first = str.find_first_not_of(" \t\n\r");  
-   if (first == std::string::npos) return "";  
-   size_t last = str.find_last_not_of(" \t\n\r");  
-   return str.substr(first, (last - first + 1));  
-}  
+std::string Utils::trim(const std::string& str)
+{
+	size_t first = str.find_first_not_of(" \t\n\r");
+	if (first == std::string::npos) return "";
+	size_t last = str.find_last_not_of(" \t\n\r");
+	return str.substr(first, (last - first + 1));
+}
 
-std::string Utils::trim_quotes(const std::string& str)  
-{  
-   if (str.size() >= 2 && str.front() == '"' && str.back() == '"') {  
-       return str.substr(1, str.size() - 2);  
-   }  
-   return str;  
-}  
+std::string Utils::trim_quotes(const std::string& str)
+{
+	if (str.size() >= 2 && str.front() == '"' && str.back() == '"') {
+		return str.substr(1, str.size() - 2);
+	}
+	return str;
+}
 
-std::string Utils::read_file(const std::string& filename)  
-{  
-   std::ifstream file(filename); // Ensure std::ifstream is included  
-   if (!file.is_open()) {  
-       throw std::runtime_error("Could not open file: " + filename);  
-   }  
-   std::stringstream buffer;  
-   buffer << file.rdbuf();  
-   return buffer.str();  
+std::string Utils::read_file(const std::string& filename)
+{
+	std::ifstream file(filename); // Ensure std::ifstream is included  
+	if (!file.is_open()) {
+		throw std::runtime_error("Could not open file: " + filename);
+	}
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	return buffer.str();
 }
 
 std::string Utils::replace_whitespace(const std::string& str, char replacement)
@@ -185,7 +190,7 @@ std::string Utils::generate_uuid()
 		else
 			result[i] = charset[dist(rng)];
 	}
-	
+
 	return result;
 }
 
