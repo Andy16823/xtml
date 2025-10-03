@@ -116,11 +116,21 @@ private:
 	std::string m_init;
 	std::string m_condition;
 	std::string m_increment;
-	std::vector<std::unique_ptr<ASTNode>> m_body;
 
 	void parse_loop(const std::string& loop_expr, const std::string& body);
 
 public:
 	ForNode(const std::string& loop_expr, const std::string& body);
+	std::string evaluate(std::map<std::string, var>& vars) override;
+};
+
+class ForEachNode : public ASTNode {
+private:
+	std::string m_collection;
+	std::string m_declaration;
+
+	std::tuple<std::string, std::string> parse_declaration(const std::string& declaration);
+public:
+	ForEachNode(const std::string& expression, const std::string& body);
 	std::string evaluate(std::map<std::string, var>& vars) override;
 };

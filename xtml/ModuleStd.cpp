@@ -50,6 +50,25 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		return var{ result, DT_STRING };
 		}, 1, 1);
 
+	registry.RegisterFunction("std", "isInt", [](const vector<var>& args) -> var {
+		if (args.size() != 1) {
+			Utils::printerr_ln("Error: std::isInt expects a single argument.");
+			return var{ "", DT_UNKNOWN };
+		}
+
+		bool is_int = args[0].type == DT_NUMBER && Utils::is_number(args[0].value);
+		return var{ is_int ? "1" : "0", DT_BOOL };
+		}, 1, 1);
+
+	registry.RegisterFunction("std", "isStr", [](const vector<var>& args) -> var {
+		if (args.size() != 1) {
+			Utils::printerr_ln("Error: std::isStr expects a single argument.");
+			return var{ "", DT_UNKNOWN };
+		}
+		bool is_str = args[0].type == DT_STRING;
+		return var{ is_str ? "1" : "0", DT_BOOL };
+		}, 1, 1);
+
 	registry.RegisterFunction("std", "toInt", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || !Utils::is_number(args[0].value)) {
 			Utils::printerr_ln("Error: std::toInt expects a single string numeric argument");
@@ -59,7 +78,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "toStr", [](const vector<var>& args) -> var {
-		if (args.size() != 1 || args[0].type != DT_NUMBER) {
+		if (args.size() != 1 || args[0].type == DT_ARRAY) {
 			Utils::printerr_ln("Error: std::toStr expects a single numeric argument.");
 			return var{ "", DT_UNKNOWN };
 		}

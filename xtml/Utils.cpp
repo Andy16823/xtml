@@ -22,7 +22,15 @@ bool Utils::is_alpha(const std::string& s)
 bool Utils::is_string(const std::string& s)  
 {  
 	return !s.empty() && s.front() == '"' && s.back() == '"';  
-}  
+}
+
+bool Utils::is_bool(const std::string& s)
+{
+	if (s == "true" || s == "false" || s == "1" || s == "0") {
+		return true;
+	}
+	return false;
+}
 
 void Utils::print_ln(const std::string& str)  
 {  

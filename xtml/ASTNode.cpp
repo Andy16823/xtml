@@ -185,3 +185,46 @@ std::string ForNode::evaluate(std::map<std::string, var>& vars)
 
 	return result;
 }
+
+std::tuple<std::string, std::string> ForEachNode::parse_declaration(const std::string& declaration)
+{
+	auto parts = Utils::split(declaration, ' in ');
+	if (parts.size() != 3) {
+		Utils::throw_err("Error: Invalid foreach declaration: " + declaration);
+	}
+	auto left = Vars::trim_var(parts[0]);
+	auto right = Vars::trim_var(parts[2]);
+
+	return std::make_tuple(left, right);
+}
+
+ForEachNode::ForEachNode(const std::string& expression, const std::string& body)
+{
+	auto [declaration, collection] = parse_declaration(expression);
+	m_declaration = declaration;
+	m_collection = collection;
+	auto statments = Core::split_statements(body);
+	auto childs = Core::parse_ast_statements(statments);
+	for (auto& child : childs) {
+		children.push_back(std::move(child));
+	}
+}
+
+std::string ForEachNode::evaluate(std::map<std::string, var>& vars)
+{
+	var collection_var = Vars::eval_expr(m_collection, vars);
+	if (collection_var.type != DT_ARRAY) {
+		Utils::throw_err("Error: Foreach collection is not an array: " + m_collection);
+	}
+
+	// Iteralte all elements in the array
+	std::string result;
+	for (const auto& item : collection_var.array) {
+		vars[m_declaration] = item;
+		for (auto& child : children) {
+			result += child->evaluate(vars);
+		}
+	}
+
+	return result;
+}

@@ -29,6 +29,7 @@ public:
 	static bool is_string_expr(const std::string& expr, const std::map<std::string, var>& vars);
 	static bool is_string_expr(std::vector<std::string>& tokens, const std::map<std::string, var>& vars);
 	static bool is_numeric_expr(std::vector<std::string>& tokens, const std::map<std::string, var>& vars);
+	static bool is_bool_expr(std::vector<std::string>& tokens, const std::map<std::string, var>& vars);
 	static bool is_function_expr(std::vector<std::string>& tokens);
 	static std::vector<std::string> parse_top_level_tokens(const std::string& expr);
 	static var eval_expr(const std::string& expr, const std::map<std::string, var>& vars);

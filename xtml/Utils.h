@@ -8,6 +8,7 @@ public:
 static bool is_number(const std::string& s);  
 static bool is_alpha(const std::string& s);  
 static bool is_string(const std::string& s);  
+static bool is_bool(const std::string& s);
 static void print_ln(const std::string& str);  
 static void printerr_ln(const std::string& str);  
 static void throw_err(const std::string& str, const std::string& stack_trace = "");

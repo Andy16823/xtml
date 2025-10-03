@@ -18,6 +18,7 @@ std::vector<std::string> Statements::split_conditions(const std::string& conditi
 	bool in_quotes = false;
 	int paren_depth = 0;
 
+	// Step 1: Split statements by && and ||
 	for (char c : condition) {
 		if (c == '"' || c == '\'') {
 			in_quotes = !in_quotes;
@@ -27,11 +28,9 @@ std::vector<std::string> Statements::split_conditions(const std::string& conditi
 		if (!in_quotes) {
 			if (c == '(') {
 				paren_depth++;
-				if (paren_depth == 1) continue; // Skip the opening parenthesis
 			}
 			else if (c == ')') {
 				paren_depth--;
-				if (paren_depth == 0) continue; // Skip the closing parenthesis
 			}
 			else if ((c == '&' || c == '|') && paren_depth == 0) {
 				if (!current.empty()) {
@@ -47,6 +46,14 @@ std::vector<std::string> Statements::split_conditions(const std::string& conditi
 	if (!current.empty()) {
 		conditions.push_back(Utils::trim(current));
 	}
+
+	// Step 2: Remove surrounding parentheses from each condition
+	for (auto& cond : conditions) {
+		if (cond.front() == '(' && cond.back() == ')') {
+			cond = Utils::trim(Utils::parse_parantheses(cond));
+		}
+	}
+
 
 	return conditions;
 }

@@ -544,6 +544,12 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 			auto node = std::make_unique<WhileNode>(condition, body);
 			nodes.push_back(std::move(node));
 		}
+		else if (Utils::starts_with(line, "@foreach")) {
+			auto condition = Utils::parse_parantheses(line);
+			auto body = Core::extract_code_section(line);
+			auto node = std::make_unique<ForEachNode>(condition, body);
+			nodes.push_back(std::move(node));
+		}
 		else if (Utils::starts_with(line, "@for")) {
 			auto condition = Utils::parse_parantheses(line);
 			auto body = Core::extract_code_section(line);

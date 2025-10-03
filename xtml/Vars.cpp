@@ -177,6 +177,33 @@ bool Vars::is_numeric_expr(vector<string>& tokens, const map<string, var>& vars)
 	return true;
 }
 
+bool Vars::is_bool_expr(std::vector<std::string>& tokens, const std::map<std::string, var>& vars)
+{
+	for (auto& token : tokens) {
+		token = Utils::trim(token);
+		if (token.empty() || token == "+") continue;
+
+		// Check if token is a boolean literal
+		if (token == "true" || token == "false" || token == "1" || token == "0") {
+			continue;
+		}
+
+		// Check if token is a variable
+		else if (auto var = vars.find(token); var != vars.end()) {
+			if (var->second.type == DT_BOOL || (var->second.type == DT_NUMBER && (var->second.value == "1" || var->second.value == "0"))) {
+				continue;
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool Vars::is_function_expr(vector<string>& tokens)
 {
 	if (tokens.size() != 1) return false;
@@ -250,6 +277,9 @@ var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 		}
 		else if (Utils::is_number(token)) {
 			evaledToken = { token, DT_NUMBER };
+		}
+		else if (Utils::is_bool(token)) {
+			evaledToken = { (token == "true" || token == "1") ? "1" : "0", DT_BOOL };
 		}
 		else if (vars.find(token) != vars.end()) {
 			evaledToken = vars.at(token);
