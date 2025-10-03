@@ -134,3 +134,17 @@ public:
 	ForEachNode(const std::string& expression, const std::string& body);
 	std::string evaluate(std::map<std::string, var>& vars) override;
 };
+
+class BreakNode : public ASTNode
+{
+public:
+	BreakNode() {}
+	std::string evaluate(std::map<std::string, var>& vars) override;
+};
+
+class ContinueNode : public ASTNode
+{
+public:
+	ContinueNode() {}
+	std::string evaluate(std::map<std::string, var>& vars) override;
+};

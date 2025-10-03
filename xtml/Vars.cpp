@@ -309,7 +309,7 @@ var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 			}
 		}
 	}
-	Utils::print_ln("Evaluated expression: " + expr + " => " + result.value + " (type: " + (result.type == DT_STRING ? "string" : result.type == DT_NUMBER ? "number" : "unknown") + ")");
+	//Utils::print_ln("Evaluated expression: " + expr + " => " + result.value + " (type: " + (result.type == DT_STRING ? "string" : result.type == DT_NUMBER ? "number" : "unknown") + ")");
 	return result;
 }
 

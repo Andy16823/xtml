@@ -78,9 +78,7 @@ std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 
 	bool resolved = false;
 	for (auto& if_branch : this->m_branches) {
-		Utils::print_ln("If branch condition: " + if_branch.condition);
 		if (Statements::evaluate_condition(if_branch.condition, if_branch.content, vars)) {
-			Utils::print_ln("Condition met, processing branch content.");
 			for (auto& child : if_branch.children) {
 				result += child->evaluate(vars);
 			}
@@ -91,7 +89,6 @@ std::string IfStatementNode::evaluate(std::map<std::string, var>& vars)
 
 	// Else branch
 	if (!resolved && this->m_has_else) {
-		Utils::print_ln("No conditions met, processing else branch.");
 		for (auto& child : this->m_else_branch.children) {
 			result += child->evaluate(vars);
 		}
@@ -116,17 +113,21 @@ WhileNode::WhileNode(const std::string& condition, const std::string& body)
 	for (auto& child : childs) {
 		children.push_back(std::move(child));
 	}
-	Utils::printerr_ln("WhileNode created with condition: " + children.size());
 }
 
 std::string WhileNode::evaluate(std::map<std::string, var>& vars)
 {
-	Utils::printerr_ln("Evaluating WhileNode with condition: " + m_condition);
 	std::string result;
 	while (Statements::evaluate_condition(m_condition, "", vars)) {
-		Utils::printerr_ln("While condition met, processing body.");
 		for (auto& child : children) {
-			result += child->evaluate(vars);
+			auto child_result = child->evaluate(vars);
+			if (child_result == "@break") {
+				return result;
+			}
+			else if (child_result == "@continue") {
+				break;
+			}
+			result += child_result;
 		}
 	}
 
@@ -171,7 +172,14 @@ std::string ForNode::evaluate(std::map<std::string, var>& vars)
 	std::string result;
 	while (Statements::evaluate_condition(m_condition, "", vars)) {
 		for (auto& child : children) {
-			result += child->evaluate(vars);
+			auto child_result = child->evaluate(vars);
+			if (child_result == "@break") {
+				return result;
+			}
+			else if (child_result == "@continue") {
+				break;
+			}
+			result += child_result;
 		}
 
 		auto [inc_key, inc_value] = Vars::parse_var(m_increment);
@@ -222,9 +230,25 @@ std::string ForEachNode::evaluate(std::map<std::string, var>& vars)
 	for (const auto& item : collection_var.array) {
 		vars[m_declaration] = item;
 		for (auto& child : children) {
-			result += child->evaluate(vars);
+			auto child_result = child->evaluate(vars);
+			if (child_result == "@break") {
+				return result;
+			}
+			else if (child_result == "@continue") {
+				break;
+			}
+			result += child_result;
 		}
 	}
-
 	return result;
+}
+
+std::string BreakNode::evaluate(std::map<std::string, var>& vars)
+{
+	return "@break";
+}
+
+std::string ContinueNode::evaluate(std::map<std::string, var>& vars)
+{
+	return "@continue";
 }

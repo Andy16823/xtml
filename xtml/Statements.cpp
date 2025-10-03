@@ -258,11 +258,7 @@ bool Statements::evaluate_condition(const std::string& condition_str, const std:
 	bool final_result = resolve_conditions(conditions, ops, vars);
 
 	if (final_result) {
-		Utils::print_ln("Condition met: " + condition + ", processing branch.");
 		return true;
-		//auto statements = Core::split_statements(branch.content);
-		//auto branch_vars = Core::parse_statements(statements, vars);
-		//return branch_vars;
 	}
 	return false;
 }

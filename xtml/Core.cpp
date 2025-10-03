@@ -585,6 +585,14 @@ std::vector<unique_ptr<ASTNode>> Core::parse_ast_statements(const std::vector<st
 				Utils::throw_err("Error: @else without matching @if.");
 			}
 		}
+		else if (Utils::starts_with(line, "@break")) {
+			auto node = std::make_unique<BreakNode>();
+			nodes.push_back(std::move(node));
+		}
+		else if (Utils::starts_with(line, "@continue")) {
+			auto node = std::make_unique<ContinueNode>();
+			nodes.push_back(std::move(node));
+		}
 	}
 	// Resolve if statement
 	if (in_if && !if_node->is_empty()) {
