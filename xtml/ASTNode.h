@@ -171,27 +171,13 @@ class VarExprNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
-class IfStatementNode : public ASTNode
+class IfStatementNode : public StmtNode
 {
-	struct Branch
-	{
-		std::string condition;
-		std::string content;
-		std::vector<std::unique_ptr<ASTNode>> children;
-	};
-
-private:
-	std::vector<Branch> m_branches;
-	bool m_has_else = false;
-	Branch m_else_branch;
-
-	void parse_branch(Branch& branch);
 public:
-	IfStatementNode();
-	void add_branch(std::string condition, std::string content);
-	void add_else(std::string content);
-	bool is_empty() const { return m_branches.empty() && !m_has_else; }
+	std::unique_ptr<ExprNode> condition;
+	std::unique_ptr<BlockNode> body;
 
+	IfStatementNode();
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
@@ -206,36 +192,28 @@ public:
 
 class WhileNode : public ASTNode
 {
-private:
-	std::string m_condition;
-	std::vector<std::unique_ptr<ASTNode>> m_body;
 public:
-	WhileNode(const std::string& condition, const std::string& body);
+	std::unique_ptr<ExprNode> condition;
+	std::vector<std::unique_ptr<BlockNode>> body;
 
+	WhileNode() = default;
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class ForNode : public ASTNode
 {
-private:
-	std::string m_init;
-	std::string m_condition;
-	std::string m_increment;
-
-	void parse_loop(const std::string& loop_expr, const std::string& body);
-
 public:
-	ForNode(const std::string& loop_expr, const std::string& body);
+	std::unique_ptr<StmtNode> init;
+	std::unique_ptr<ExprNode> condition;
+	std::unique_ptr<StmtNode> increment;
+	ForNode() = default;
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
 class ForEachNode : public ASTNode {
-private:
-	std::string m_collection;
-	std::string m_declaration;
-
-	std::tuple<std::string, std::string> parse_declaration(const std::string& declaration);
 public:
+	std::unique_ptr<StmtNode> declaration;
+	std::unique_ptr<BlockNode> body;
 	ForEachNode(const std::string& expression, const std::string& body);
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };

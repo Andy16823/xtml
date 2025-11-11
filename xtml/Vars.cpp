@@ -542,3 +542,93 @@ var Vars::booleanOperation(const var& left, const var& right, const std::string&
 	}
 	Utils::throw_err("Error: Unknown boolean operation: " + op);
 }
+
+bool Vars::compareOperation(const var& left, const var& right, const std::string& op)
+{
+	if(left.type != right.type) {
+		Utils::throw_err("Error: Type mismatch in comparison operation.");
+	}
+	if(left.type == DT_STRING) {
+		return compareStrings(left.value, right.value, op);
+	}
+	if(left.type == DT_NUMBER) {
+		return compareNumbers(std::stoll(left.value), std::stoll(right.value), op);
+	}
+	if(left.type == DT_BOOL) {
+		bool leftBool = (left.value == "true" || left.value == "1");
+		bool rightBool = (right.value == "true" || right.value == "1");
+		return compareBooleans(leftBool, rightBool, op);
+	}
+	Utils::throw_err("Error: Unsupported type in comparison operation.");
+}
+
+bool Vars::compareStrings(const std::string& left, const std::string& right, const std::string& op)
+{
+	if (op == "==") {
+		return left == right;
+	}
+	else if (op == "!=") {
+		return left != right;
+	}
+	else if (op == "<") {
+		return left < right;
+	}
+	else if (op == "<=") {
+		return left <= right;
+	}
+	else if (op == ">") {
+		return left > right;
+	}
+	else if (op == ">=") {
+		return left >= right;
+	}
+	Utils::throw_err("Error: Unknown comparison operation: " + op);
+}
+
+bool Vars::compareNumbers(int64_t left, int64_t right, const std::string& op)
+{
+	if (op == "==") {
+		return left == right;
+	}
+	else if (op == "!=") {
+		return left != right;
+	}
+	else if (op == "<") {
+		return left < right;
+	}
+	else if (op == "<=") {
+		return left <= right;
+	}
+	else if (op == ">") {
+		return left > right;
+	}
+	else if (op == ">=") {
+		return left >= right;
+	}
+	Utils::throw_err("Error: Unknown comparison operation: " + op);
+}
+
+bool Vars::compareBooleans(bool left, bool right, const std::string& op)
+{
+	if (op == "==") {
+		return left == right;
+	}
+	else if (op == "!=") {
+		return left != right;
+	}
+	Utils::throw_err("Error: Unknown comparison operation: " + op);
+}
+
+BinaryOpType Vars::get_binary_op_type(const std::string& op)
+{
+	if (op == "=") {
+		return BinaryOpType::Assignment;
+	}
+	else if (op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=") {
+		return BinaryOpType::Comparison;
+	}
+	else if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%" || op == "^" || op == "//") {
+		return BinaryOpType::Arithmetic;
+	}
+	return BinaryOpType::Unknown;
+}

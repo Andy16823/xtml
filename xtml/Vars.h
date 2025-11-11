@@ -12,6 +12,13 @@ enum DataType
 	DT_UNKNOWN
 };
 
+enum class BinaryOpType { 
+	Assignment, 
+	Comparison, 
+	Arithmetic, 
+	Unknown 
+};
+
 struct var {
 	std::string value;
 	DataType type;
@@ -47,5 +54,12 @@ public:
 	static var stringOperation(const var& left, const var& right, const std::string& op);
 	static var numericOperation(const var& left, const var& right, const std::string& op);
 	static var booleanOperation(const var& left, const var& right, const std::string& op);
+
+	static bool compareOperation(const var& left, const var& right, const std::string& op);
+	static bool compareStrings(const std::string& left, const std::string& right, const std::string& op);
+	static bool compareNumbers(int64_t left, int64_t right, const std::string& op);
+	static bool compareBooleans(bool left, bool right, const std::string& op);
+
+	static BinaryOpType get_binary_op_type(const std::string& op);
 
 };

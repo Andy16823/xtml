@@ -23,6 +23,7 @@ public:
 	std::unique_ptr<ASTNode> parse();
 	std::unique_ptr<FunctionNode> parseFunction();		// Parse function definitions
 	std::unique_ptr<BlockNode> parseBlock();			// Parse code blocks
+	std::unique_ptr<BlockNode> parseBracketBlock();
 	std::unique_ptr<StmtNode> parseStatement();			// Parse individual statements
 	std::unique_ptr<ExprNode> parseExpression();		// Parse expressions
 	std::unique_ptr<ExprNode> parsePrimary();			// Parse primary expressions
@@ -30,6 +31,7 @@ public:
 
 	std::unique_ptr<VarDeclNode> parseVarDeclaration(const Token& token); // Parse variable declarations
 	std::unique_ptr<ExprStatementNode> parseExprStatement(const Token& token); // Parse expression statements
+	std::unique_ptr<IfStatementNode> parseIfStatement(const Token& token); // Parse if statements 
 
 };
 

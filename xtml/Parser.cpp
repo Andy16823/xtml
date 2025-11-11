@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include <iostream>
+#include "Utils.h"
 
 
 Token& Parser::peek()
@@ -66,6 +67,22 @@ std::unique_ptr<BlockNode> Parser::parseBlock()
 	return blockNode;
 }
 
+std::unique_ptr<BlockNode> Parser::parseBracketBlock()
+{
+	if(!match(TokenType::Symbol, "{")) {
+		Utils::throw_err("Error: Expected '{' to start block at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+	}
+	auto blockNode = std::make_unique<BlockNode>();
+	while (!match(TokenType::Symbol, "}")) {
+		auto stmt = parseStatement();
+		if (stmt != nullptr) {
+			blockNode->add_child(std::move(stmt));
+			continue;
+		}
+	}
+	return blockNode;
+}
+
 std::unique_ptr<StmtNode> Parser::parseStatement()
 {
 	auto& t = peek();
@@ -73,12 +90,15 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseVarDeclaration(t);
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "if") {
+		return parseIfStatement(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
 
-	throw std::runtime_error("Error: Unknown statement starting with token '" + peek().value + "' at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column));
-	return nullptr;
+	Utils::throw_err("Error: Unable to parse statement at line " + std::to_string(t.line) + ", column " + std::to_string(t.column));
 }
 
 std::unique_ptr<ExprNode> Parser::parseExpression()
@@ -174,4 +194,19 @@ std::unique_ptr<ExprStatementNode> Parser::parseExprStatement(const Token& token
 		throw std::runtime_error("Error: Missing semicolon at end of expression statement.");
 	}
 	return exprStmt;
+}
+
+std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
+{
+	get(); // Consume 'if' keyword
+	auto ifStmt = std::make_unique<IfStatementNode>();
+	if (!match(TokenType::Symbol, "(")) {
+		Utils::throw_err("Error: Expected '(' after 'if' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	ifStmt->condition = parseExpression();
+	if (!match(TokenType::Symbol, ")")) {
+		Utils::throw_err("Error: Expected ')' after if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	ifStmt->body = parseBracketBlock();
+	return ifStmt;
 }
