@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include "Statements.h"
+#include <stdint.h>
 
 
 
@@ -56,6 +57,25 @@ public:
 };
 
 /// <summary>
+/// Statement Node
+/// </summary>
+class StmtNode : public ASTNode
+{
+	public:
+	EvalResult evaluate(std::map<std::string, var>& vars);
+};
+
+
+/// <summary>
+/// Expression Node
+/// </summary>
+class ExprNode : public ASTNode
+{
+	public:
+	EvalResult evaluate(std::map<std::string, var>& vars);
+};
+
+/// <summary>
 /// Block Node
 /// </summary>
 class BlockNode : public ASTNode
@@ -64,17 +84,90 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+class FunctionNode : public ASTNode {
+	public:
+		std::string name;
+		std::vector<std::unique_ptr<ExprNode>> arguments;
+		std::unique_ptr<BlockNode> body;
+		std::map<std::string, var> localVars;
+		EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
 
-/// <summary>
-/// Variable Declaration Node
-/// </summary>
-class VarDeclNode : public ASTNode
+class VarDeclNode : public StmtNode
 {
 private:
 	std::string m_name;
 	std::string m_expr;
 public:
+	std::string name;
+	std::unique_ptr<ExprNode> expression;
+
+	VarDeclNode() = default;
 	VarDeclNode(const std::string& name, const std::string& expr) : m_name(name), m_expr(expr) {}
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class BinaryExprNode : public ExprNode
+{
+public:
+	std::unique_ptr<ExprNode> left;
+	std::unique_ptr<ExprNode> right;
+	std::string op; // Operator
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class ExprStatementNode : public StmtNode
+{
+	public:
+	std::unique_ptr<ExprNode> expression;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class IntegerLiteralNode : public ExprNode
+{
+	public:
+	int64_t value;
+	IntegerLiteralNode(int64_t val) : value(val) {}
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class StringLiteralNode : public ExprNode
+{
+	public:
+	std::string value;
+	StringLiteralNode(const std::string& val) : value(val) {}
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class FloatLiteralNode : public ExprNode
+{
+	public:
+	double value;
+	FloatLiteralNode(double val) : value(val) {}
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class BoolLiteralNode : public ExprNode
+{
+	public:
+	bool value;
+	BoolLiteralNode(bool val) : value(val) {}
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class DoubleLiteralNode : public ExprNode
+{
+	public:
+	double value;
+	DoubleLiteralNode(double val) : value(val) {}
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class VarExprNode : public ExprNode
+{
+	public:
+	std::string name;
+	VarExprNode(const std::string& varName) : name(varName) {}
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 

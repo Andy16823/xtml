@@ -43,5 +43,9 @@ public:
 	static bool is_array_expr(const std::string& token);
 	static var eval_array_expr(const std::string& token, const std::map<std::string, var>& vars);
 
+	static var binaryOperation(const var& left, const var& right, const std::string& op);
+	static var stringOperation(const var& left, const var& right, const std::string& op);
+	static var numericOperation(const var& left, const var& right, const std::string& op);
+	static var booleanOperation(const var& left, const var& right, const std::string& op);
 
 };

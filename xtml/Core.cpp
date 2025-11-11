@@ -5,6 +5,8 @@
 #include "Utils.h"
 #include "Vars.h"
 #include "Statements.h"
+#include "Lexer.h"
+#include "Parser.h"
 
 using namespace std;
 
@@ -156,6 +158,30 @@ string Core::build_file(const string& path, map<string, var>& vars)
 	auto base_path = Utils::file_path_parent(path);
 
 	return build_content(content, base_path, vars);
+}
+
+std::string Core::build_file_new(const std::string& path)
+{
+	auto ast_root = std::make_unique<ASTRoot>();
+	auto content = Utils::read_file(path);
+	auto blocks = Core::find_xtml_tags(content);
+
+	// Build global vars from self-closing tags
+	std::map<string, var> vars;
+
+	for (const auto& block : blocks) {
+		if (!block.self_closing) {
+			Lexer lexer(block.content);
+			auto tokens = lexer.tokenize();
+			Parser parser(tokens);
+			auto functionNode = parser.parse();
+			auto result = functionNode->evaluate(vars);
+			content = Utils::replace(content, block.full, result.content);
+		}
+	}
+	content = Core::resolve_placeholders(content, vars);
+	Utils::print_ln("Build completed.");
+	return content;
 }
 
 /// <summary>

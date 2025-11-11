@@ -21,7 +21,16 @@ bool Utils::is_alpha(const std::string& s)
 
 bool Utils::is_string(const std::string& s)
 {
-	return !s.empty() && s.front() == '"' && s.back() == '"';
+	if (s.size() < 2 || s.front() != '"') return false;
+
+	// Prüfe, ob das letzte Zeichen ein " ist, das nicht escaped ist
+	size_t backIndex = s.size() - 1;
+	size_t escapeCount = 0;
+	while (backIndex > 0 && s[backIndex - 1 - escapeCount] == '\\') {
+		escapeCount++;
+	}
+
+	return s.back() == '"' && (escapeCount % 2 == 0);
 }
 
 bool Utils::is_bool(const std::string& s)
@@ -192,6 +201,18 @@ std::string Utils::generate_uuid()
 	}
 
 	return result;
+}
+
+DataType Utils::predictVarType(const std::string& value)
+{
+	// TODO: Improve type prediction (e.g., arrays, etc.)
+	if (Utils::is_number(value)) {
+		return DT_NUMBER;
+	}
+	else if (Utils::is_bool(value)) {
+		return DT_BOOL;
+	}
+	return DT_STRING; // Default to string
 }
 
 std::string Utils::parse_parantheses(const std::string& str)

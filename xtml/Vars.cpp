@@ -254,62 +254,12 @@ vector<string> Vars::parse_top_level_tokens(const string& expr)
 
 var Vars::eval_expr(const string& expr, const map<string, var>& vars)
 {
-	auto outval = string();
-	auto tokens = parse_top_level_tokens(expr);
-
-	var result = { "", DT_UNKNOWN };
-	for (auto token : tokens) {
-		token = Utils::trim(token);
-		if (token.empty()) continue;
-
-		// Step 1: Evaluate the token to a var
-		var evaledToken = { "", DT_UNKNOWN };
-		if (is_function_expr(token)) {
-			evaledToken = eval_func_expr(token, vars);
-		}
-		else if (is_array_expr(token)) {
-			evaledToken = eval_array_expr(token, vars);
-		}
-		else if (Utils::is_string(token)) {
-			auto str = Utils::trim_quotes(token);
-			str = Utils::escape_str(str);
-			evaledToken = { str, DT_STRING };
-		}
-		else if (Utils::is_number(token)) {
-			evaledToken = { token, DT_NUMBER };
-		}
-		else if (Utils::is_bool(token)) {
-			evaledToken = { (token == "true" || token == "1") ? "1" : "0", DT_BOOL };
-		}
-		else if (vars.find(token) != vars.end()) {
-			evaledToken = vars.at(token);
-		}
-		else {
-			Utils::throw_err("Error: Unknown token in expression: " + token, "");
-		}
-
-		// Step 2: Determine how to handle the evaluated token (for this case it's only + operator)
-		if (result.type == DT_UNKNOWN) {
-			result = evaledToken;
-		}
-		else {
-			if (result.type == DT_STRING || evaledToken.type == DT_STRING) {
-				// String concatenation
-				result.value += evaledToken.value;
-				result.type = DT_STRING;
-			}
-			else if (result.type == DT_NUMBER && evaledToken.type == DT_NUMBER) {
-				// Numeric addition
-				int64_t sum = std::stoll(result.value) + std::stoll(evaledToken.value);
-				result.value = std::to_string(sum);
-				result.type = DT_NUMBER;
-			}
-			else {
-				Utils::throw_err("Error: Incompatible types in expression: " + expr);
-			}
-		}
+	// With the lexer/parser the evaluation is now handled in AST nodes.
+	// Only simple variable lookup is needed here.
+	var result{ "", DT_UNKNOWN };
+	if(vars.find(expr) != vars.end()) {
+		return vars.at(expr);
 	}
-	//Utils::print_ln("Evaluated expression: " + expr + " => " + result.value + " (type: " + (result.type == DT_STRING ? "string" : result.type == DT_NUMBER ? "number" : "unknown") + ")");
 	return result;
 }
 
@@ -492,4 +442,103 @@ var Vars::eval_array_expr(const std::string& token, const std::map<std::string, 
 		result.array.push_back(evaledItem);
 	}
 	return result;
+}
+
+var Vars::binaryOperation(const var& left, const var& right, const std::string& op)
+{
+	if(left.type != right.type) {
+		Utils::throw_err("Error: Type mismatch in binary operation.");
+	}
+	if(left.type == DT_STRING) {
+		return stringOperation(left, right, op);
+	}
+	if(left.type == DT_NUMBER) {
+		return numericOperation(left, right, op);
+	}
+	if(left.type == DT_BOOL) {
+		return booleanOperation(left, right, op);
+	}
+
+	Utils::throw_err("Error: Unsupported type in binary operation.");
+}
+
+var Vars::stringOperation(const var& left, const var& right, const std::string& op)
+{
+	if(left.type != DT_STRING || right.type != DT_STRING) {
+		Utils::throw_err("Error: String operation on non-string types.");
+	}
+	if(op == "+") {
+		return var{ left.value + right.value, DT_STRING };
+	} 
+
+	Utils::throw_err("Error: Unknown string operation: " + op);
+}
+
+var Vars::numericOperation(const var& left, const var& right, const std::string& op)
+{
+	if (left.type != DT_NUMBER || right.type != DT_NUMBER) {
+		Utils::throw_err("Error: Numeric operation on non-number types.");
+	}
+	int64_t leftNum = std::stoll(left.value);
+	int64_t rightNum = std::stoll(right.value);
+
+	if (op == "+") {
+		return var{ std::to_string(leftNum + rightNum), DT_NUMBER };
+	}
+	if(op == "-") {
+		return var{ std::to_string(leftNum - rightNum), DT_NUMBER };
+	}
+	if (op == "*")
+	{
+		return var{ std::to_string(leftNum * rightNum), DT_NUMBER };
+	}
+	if (op == "/")
+	{
+		if (rightNum == 0) {
+			Utils::throw_err("Error: Division by zero.");
+		}
+		return var{ std::to_string(leftNum / rightNum), DT_NUMBER };
+	}
+	if (op == "%")
+	{
+		if (rightNum == 0) {
+			Utils::throw_err("Error: Modulo by zero.");
+		}
+		return var{ std::to_string(leftNum % rightNum), DT_NUMBER };
+	}
+	if(op == "^")
+	{
+		int64_t result = 1;
+		for (int64_t i = 0; i < rightNum; ++i) {
+			result *= leftNum;
+		}
+		return var{ std::to_string(result), DT_NUMBER };
+	}
+	if(op == "//")
+	{
+		if (rightNum == 0) {
+			Utils::throw_err("Error: Floor division by zero.");
+		}
+		return var{ std::to_string(leftNum / rightNum), DT_NUMBER };
+	}
+
+	Utils::throw_err("Error: Unknown numeric operation: " + op);
+}
+
+var Vars::booleanOperation(const var& left, const var& right, const std::string& op)
+{
+	if (left.type != DT_BOOL || right.type != DT_BOOL) {
+		Utils::throw_err("Error: Boolean operation on non-boolean types.");
+	}
+
+	bool leftBool = (left.value == "true" || left.value == "1");
+	bool rightBool = (right.value == "true" || right.value == "1");
+
+	if (op == "&&") {
+		return var{ (leftBool && rightBool) ? "true" : "false", DT_BOOL };
+	}
+	if (op == "||") {
+		return var{ (leftBool || rightBool) ? "true" : "false", DT_BOOL };
+	}
+	Utils::throw_err("Error: Unknown boolean operation: " + op);
 }

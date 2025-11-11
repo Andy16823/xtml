@@ -12,4 +12,7 @@
     <LocalDebuggerCommandArguments>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+  </PropertyGroup>
 </Project>

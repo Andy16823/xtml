@@ -245,7 +245,9 @@
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="FunctionRegistry.cpp" />
     <ClCompile Include="Include.cpp" />
+    <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="ModuleStd.cpp" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Statements.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vars.cpp" />
@@ -257,8 +259,10 @@
     <ClInclude Include="FunctionRegistry.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Include.h" />
+    <ClInclude Include="Lexer.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleStd.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="Statements.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vars.h" />

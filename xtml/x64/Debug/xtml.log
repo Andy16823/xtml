@@ -1,25 +1,2 @@
-﻿  ASTNode.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(221,41): warning C4305: "Argument": Verkürzung von "int" in "char"
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(221,41): warning C4309: "Argument": Verkürzung eines konstanten Wertes
-  Core.cpp
-  FunctionRegistry.cpp
-  Include.cpp
-  ModuleStd.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244: "=": Konvertierung von "_Rep" in "unsigned int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         with
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         [
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:             _Rep=__int64
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         ]
-  Statements.cpp
-  Utils.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(177,11): warning C4244: "Initialisierung": Konvertierung von "_Rep" in "int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(177,11): warning C4244:         with
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(177,11): warning C4244:         [
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(177,11): warning C4244:             _Rep=__int64
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(177,11): warning C4244:         ]
-  Vars.cpp
-  xtml.cpp
-  Code wird generiert...
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(393,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(436,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+﻿  Core.cpp
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe
