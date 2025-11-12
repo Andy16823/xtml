@@ -162,7 +162,7 @@ string Core::build_file(const string& path, map<string, var>& vars)
 	return "";
 }
 
-std::string Core::build_file_new(const std::string& path)
+std::string Core::buildFile(const std::string& path)
 {
 	auto ast_root = std::make_unique<ASTRoot>();
 	auto content = Utils::read_file(path);

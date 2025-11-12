@@ -24,7 +24,7 @@ public:
 	static std::string clean_content(std::string& content);	
 	static std::string build_file(const std::string& path, std::map<std::string, var>& vars);
 
-	static std::string build_file_new(const std::string& path);
+	static std::string buildFile(const std::string& path);
 	static void write_file(const std::string& content, const std::string& output_path);
 	static std::vector<XtmlTag> find_xtml_tags(const std::string& content);
 	static std::map<std::string, std::string> parse_xtml_attributes(const std::string& tag);
