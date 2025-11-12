@@ -64,11 +64,27 @@ IfStatementNode::IfStatementNode()
 
 EvalResult IfStatementNode::evaluate(std::map<std::string, var>& vars)
 {
-	// Evaluate children
 	EvalResult result;
+
+	// Try if condition
 	auto condResult = condition->evaluate(vars);
 	if(condResult.content == "true") {
 		result = body->evaluate(vars);
+		return result;	// Return because if was executed
+	}
+	
+	// Try else ifs
+	for (auto& elseif : elseIfs) {
+		auto elseIfresult = elseif->condition->evaluate(vars);
+		if (elseIfresult.content == "true") {
+			result = elseif->body->evaluate(vars);
+			return result; // Return because else if was executed
+		}
+	}
+
+	// Try else body
+	if(elseBody != nullptr) {
+		result = elseBody->evaluate(vars);
 	}
 	return result;
 }
@@ -260,7 +276,7 @@ EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
 	std::ostringstream out;
 	out << "<" << tagName;
 	for (auto& [key, value] : attributes) {
-		std::string exvalue = Core::resolve_placeholders(value, vars);
+		std::string exvalue = value;
 		out << " " << key << "=\"" << exvalue << "\"";
 	}
 	
@@ -278,6 +294,7 @@ EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
 
 	EvalResult result;
 	result.content = out.str();
+	result.content = Core::resolve_placeholders(result.content, vars);
 	return result;
 }
 
@@ -291,6 +308,6 @@ EvalResult HtmlStmtRootNode::evaluate(std::map<std::string, var>& vars)
 EvalResult HtmlTextNode::evaluate(std::map<std::string, var>& vars)
 {
 	EvalResult result;
-	result.content = Core::resolve_placeholders(content, vars);
+	result.content = content;
 	return result;
 }

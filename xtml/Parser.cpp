@@ -220,6 +220,41 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 		Utils::throw_err("Error: Expected ')' after if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	ifStmt->body = parseBracketBlock();
+
+	// Check for else if and else clauses
+	while (match(TokenType::Keyword, "else")) {
+		// Eearly end of file check
+		if(peek().type == TokenType::EndOfFile) {
+			Utils::throw_err("Error: Unexpected end of file after 'else' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+
+		if (match(TokenType::Keyword, "if")) {
+			// Else if clause
+			auto elseifstmt = std::make_unique<IfStatementNode>();
+
+			// Check for condition
+			if (!match(TokenType::Symbol, "(")) {
+				Utils::throw_err("Error: Expected '(' after 'else if' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			}
+
+			// Parse condition
+			elseifstmt->condition = parseExpression();
+
+			// Expect closing parenthesis
+			if (!match(TokenType::Symbol, ")")) {
+				Utils::throw_err("Error: Expected ')' after else if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			}
+
+			// Parse body for else if and add to ifStmt
+			elseifstmt->body = parseBracketBlock();
+			ifStmt->elseIfs.push_back(std::move(elseifstmt));
+		}
+		else {
+			// Else clause - parse body and assign to elseBody
+			ifStmt->elseBody = parseBracketBlock();
+		}
+	}
+
 	return ifStmt;
 }
 
@@ -301,7 +336,7 @@ std::unique_ptr<HtmlTextNode> Parser::parseHtmlTextNode(const Token& token)
 	std::ostringstream content;
 
 	// Add current token value
-	content << token.value;
+	content << token.value << " ";
 
 	// Continue until next token is an operator < or </
 	auto next = peek();
