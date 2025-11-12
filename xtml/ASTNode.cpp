@@ -6,6 +6,7 @@
 #include <string>
 #include "Core.h"
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -252,4 +253,26 @@ EvalResult ExprStatementNode::evaluate(std::map<std::string, var>& vars)
 		}
 	}
 	Utils::throw_err("Error: Unsupported expression statement.");
+}
+
+EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
+{
+	std::ostringstream out;
+	out << "<" << tagName;
+	for (auto& [key, value] : attributes) {
+		out << " " << key << "=\"" << value << "\"";
+	}
+	
+	if (selfClosing) {
+		out << " />";
+	}
+	else {
+		out << ">";
+		out << content;
+		out << "</" << tagName << ">";
+	}
+
+	EvalResult result;
+	result.content = out.str();
+	return result;
 }

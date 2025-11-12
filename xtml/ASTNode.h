@@ -231,3 +231,12 @@ public:
 	ContinueNode() {}
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
+
+class HtmlStmtNode : public StmtNode {
+public:
+	std::string tagName;
+	std::string content;
+	std::map<std::string, std::string> attributes;
+	bool selfClosing = false;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};

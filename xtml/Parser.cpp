@@ -94,6 +94,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseIfStatement(t);
 	}
 
+	if (t.type == TokenType::Operator && t.value == "<") {
+		return parseHtmlStatement(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
@@ -209,4 +213,58 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 	}
 	ifStmt->body = parseBracketBlock();
 	return ifStmt;
+}
+
+std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
+{
+	get(); // Consume <
+	auto htmlStmt = std::make_unique<HtmlStmtNode>();
+	htmlStmt->tagName = get().value; // Tag name
+	while (true) {
+		// End of file check
+		if(peek().type == TokenType::EndOfFile) {
+			Utils::throw_err("Error: Unexpected end of file while parsing HTML tag <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+
+		// First exit condition tag end
+		if(match(TokenType::Operator, ">")) {
+			break;
+		}
+		// Second exit condition self-closing tag
+		if (match(TokenType::Symbol, "/>")) {
+			htmlStmt->selfClosing = true;
+			break;
+		}
+
+		// Parse attributes
+		std::string attrName = get().value;
+		if (!match(TokenType::Operator, "=")) {
+			Utils::throw_err("Error: Expected '=' after attribute name '" + attrName + "' in HTML tag at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+		std::string attrValue = get().value;
+		htmlStmt->attributes[attrName] = Utils::trim_quotes(attrValue);
+	}
+	// If not self-closing, parse content and closing tag
+	if (!htmlStmt->selfClosing) {
+		// Parse content until closing tag
+		std::string content;
+		while (!match(TokenType::Operator , "</")) {
+			if(peek().type == TokenType::EndOfFile) {
+				Utils::throw_err("Error: Unexpected end of file while parsing content of <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			}
+			const Token& t = get();
+			content += t.value + " ";
+		}
+		htmlStmt->content = Utils::trim(content);
+
+		// Expect closing tag since the while loop exited and removed </
+		std::string closingTagName = get().value;
+		if(htmlStmt->tagName != closingTagName) {
+			Utils::throw_err("Error: Mismatched closing tag </" + closingTagName + "> for <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+		if (!match(TokenType::Operator, ">")) {
+			Utils::throw_err("Error: Expected '>' at end of closing tag </" + closingTagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+		return htmlStmt;
+	}
 }

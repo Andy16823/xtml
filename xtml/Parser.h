@@ -32,6 +32,7 @@ public:
 	std::unique_ptr<VarDeclNode> parseVarDeclaration(const Token& token); // Parse variable declarations
 	std::unique_ptr<ExprStatementNode> parseExprStatement(const Token& token); // Parse expression statements
 	std::unique_ptr<IfStatementNode> parseIfStatement(const Token& token); // Parse if statements 
+	std::unique_ptr<HtmlStmtNode> parseHtmlStatement(const Token& token); // Parse HTML statements
 
 };
 
