@@ -49,10 +49,42 @@ std::unique_ptr<XtmlBlockNode> Parser::parse()
 
 std::unique_ptr<FunctionNode> Parser::parseFunction()
 {
-	// No parameters for now
-	std::unique_ptr<FunctionNode> funcNode = std::make_unique<FunctionNode>();
-	funcNode->body = parseBlock();
-	return funcNode;
+	get(); // Consume 'function' keyword
+	auto function = std::make_unique<FunctionNode>();
+	function->name = get().value;
+
+	if (!match(TokenType::Symbol, "(")) {
+		Utils::throw_err("Error: Expected '(' after function name at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+	}
+
+	// Parse parameters (not implemented yet)
+	while (true) {
+		// Early EOF check
+		if(peek().type == TokenType::EndOfFile) {
+			Utils::throw_err("Error: Unexpected end of file while parsing function parameters at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+		}
+
+		// Parse the parameter expression
+		auto param = parseExpression();
+		if(param == nullptr) {
+			Utils::throw_err("Error: Expected parameter expression in function parameter list at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+		}
+		function->arguments.push_back(std::move(param));
+		
+		if (!match(TokenType::Symbol, ",")) {
+			if(!match(TokenType::Symbol, ")")) {
+				Utils::throw_err("Error: Expected ',' or ')' in function parameter list at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+			}
+			else {
+				break;
+			}
+		}
+	}
+
+	// Parse function body
+	function->body = parseBracketBlock();
+
+	return function;
 }
 
 std::unique_ptr<BlockNode> Parser::parseBlock()
@@ -109,6 +141,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 
 	if (t.type == TokenType::Operator && t.value == "<") {
 		return parseHtmlStatement(t);
+	}
+
+	if (t.type == TokenType::Keyword && t.value == "function") {
+		return parseFunction();
 	}
 
 	if (t.type == TokenType::Identifier) {

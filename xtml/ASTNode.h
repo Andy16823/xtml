@@ -76,12 +76,16 @@ public:
 /// <summary>
 /// Function Node
 /// </summary>
-class FunctionNode : public ASTNode {
+class FunctionNode : public StmtNode {
 	public:
+		Program localProgram;
+
 		std::string name;
 		std::vector<std::unique_ptr<ExprNode>> arguments;
 		std::unique_ptr<BlockNode> body;
 		EvalResult evaluate(Program& program) override;
+
+		void inheritProgram(const Program& source);
 };
 
 /// <summary>

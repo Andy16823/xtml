@@ -164,6 +164,12 @@ EvalResult FunctionNode::evaluate(Program& program)
 	return result;
 }
 
+void FunctionNode::inheritProgram(const Program& source)
+{
+	// Only functions are inherited for now
+
+}
+
 EvalResult BinaryExprNode::evaluate(Program& program)
 {
 	EvalResult result;

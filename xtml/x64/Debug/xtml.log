@@ -1,6 +1,12 @@
-﻿  Core.cpp
+﻿  ASTNode.cpp
+  Core.cpp
+  Lexer.cpp
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Lexer.cpp(23,16): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Lexer.cpp(63,17): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
   Parser.cpp
   Code wird generiert...
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(119,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(361,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(155,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(397,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Lexer.cpp(131,1): warning C4715: "Lexer::number": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(294,1): warning C4715: "ExprStatementNode::evaluate": Nicht alle Codepfade geben einen Wert zurück.
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe
