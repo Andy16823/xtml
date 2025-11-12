@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include <iostream>
 #include "Utils.h"
+#include <sstream>
 
 
 Token& Parser::peek()
@@ -74,6 +75,9 @@ std::unique_ptr<BlockNode> Parser::parseBracketBlock()
 	}
 	auto blockNode = std::make_unique<BlockNode>();
 	while (!match(TokenType::Symbol, "}")) {
+		if(peek().type == TokenType::EndOfFile) {
+			Utils::throw_err("Error: Unexpected end of file while parsing block starting at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+		}
 		auto stmt = parseStatement();
 		if (stmt != nullptr) {
 			blockNode->add_child(std::move(stmt));
@@ -92,6 +96,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 
 	if (t.type == TokenType::Keyword && t.value == "if") {
 		return parseIfStatement(t);
+	}
+
+	if (t.type == TokenType::Keyword && t.value == "html") {
+		return parseHtmlRootStatement(t);
 	}
 
 	if (t.type == TokenType::Operator && t.value == "<") {
@@ -215,6 +223,14 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 	return ifStmt;
 }
 
+std::unique_ptr<HtmlStmtRootNode> Parser::parseHtmlRootStatement(const Token& token)
+{
+	get(); // Consume 'html' keyword
+	auto htmlRoot = std::make_unique<HtmlStmtRootNode>();
+	htmlRoot->body = parseBracketBlock();
+	return htmlRoot;
+}
+
 std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 {
 	get(); // Consume <
@@ -244,6 +260,7 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 		std::string attrValue = get().value;
 		htmlStmt->attributes[attrName] = Utils::trim_quotes(attrValue);
 	}
+
 	// If not self-closing, parse content and closing tag
 	if (!htmlStmt->selfClosing) {
 		// Parse content until closing tag
@@ -252,10 +269,19 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 			if(peek().type == TokenType::EndOfFile) {
 				Utils::throw_err("Error: Unexpected end of file while parsing content of <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 			}
-			const Token& t = get();
-			content += t.value + " ";
+
+			// Check for nested tags
+			if (peek().type == TokenType::Operator && peek().value == "<") 
+			{
+				auto nestedTag = parseHtmlStatement(token);
+				htmlStmt->children.push_back(std::move(nestedTag));
+				continue;
+			}
+
+			auto& token = get();
+			auto htmlTextNode = parseHtmlTextNode(token);
+			htmlStmt->children.push_back(std::move(htmlTextNode));
 		}
-		htmlStmt->content = Utils::trim(content);
 
 		// Expect closing tag since the while loop exited and removed </
 		std::string closingTagName = get().value;
@@ -267,4 +293,27 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 		}
 		return htmlStmt;
 	}
+}
+
+std::unique_ptr<HtmlTextNode> Parser::parseHtmlTextNode(const Token& token)
+{
+	std::unique_ptr<HtmlTextNode> textNode = std::make_unique<HtmlTextNode>();
+	std::ostringstream content;
+
+	// Add current token value
+	content << token.value;
+
+	// Continue until next token is an operator < or </
+	auto next = peek();
+	while (next.type != TokenType::Operator && (next.value != "<" || next.value != "</")) {
+		if(next.type == TokenType::EndOfFile) {
+			Utils::throw_err("Error: Unexpected end of file while parsing HTML text node at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+		content << get().value << " ";
+		next = peek();
+	}
+
+	// Set content and return
+	textNode->content = Utils::trim(content.str());
+	return textNode;
 }

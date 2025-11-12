@@ -268,13 +268,29 @@ EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
 		out << " />";
 	}
 	else {
-		std::string excontent = Core::resolve_placeholders(content, vars);
 		out << ">";
-		out << excontent;
+		for (auto& child : this->children) {
+			EvalResult childResult = child->evaluate(vars);
+			out << childResult.content;
+		}
 		out << "</" << tagName << ">";
 	}
 
 	EvalResult result;
 	result.content = out.str();
+	return result;
+}
+
+EvalResult HtmlStmtRootNode::evaluate(std::map<std::string, var>& vars)
+{
+	EvalResult result;
+	result = body->evaluate(vars);
+	return result;
+}
+
+EvalResult HtmlTextNode::evaluate(std::map<std::string, var>& vars)
+{
+	EvalResult result;
+	result.content = Core::resolve_placeholders(content, vars);
 	return result;
 }

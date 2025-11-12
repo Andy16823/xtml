@@ -57,7 +57,8 @@ private:
 		"while",
 		"continue",
 		"break",
-		"print"
+		"print",
+		"html"
 	};
 
 	std::unordered_set<std::string> operators = {

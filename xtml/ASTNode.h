@@ -84,6 +84,9 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Function Node
+/// </summary>
 class FunctionNode : public ASTNode {
 	public:
 		std::string name;
@@ -93,20 +96,23 @@ class FunctionNode : public ASTNode {
 		EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Variable Declaration Node
+/// </summary>
 class VarDeclNode : public StmtNode
 {
-private:
-	std::string m_name;
-	std::string m_expr;
 public:
 	std::string name;
 	std::unique_ptr<ExprNode> expression;
 
 	VarDeclNode() = default;
-	VarDeclNode(const std::string& name, const std::string& expr) : m_name(name), m_expr(expr) {}
+	VarDeclNode(const std::string& name, std::unique_ptr<ExprNode> expr) : name(name), expression(std::move(expr)) {}
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Binary Expression Node
+/// </summary>
 class BinaryExprNode : public ExprNode
 {
 public:
@@ -116,6 +122,9 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Expression Statement Node
+/// </summary>
 class ExprStatementNode : public StmtNode
 {
 	public:
@@ -123,6 +132,9 @@ class ExprStatementNode : public StmtNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Integer Literal Node
+/// </summary>
 class IntegerLiteralNode : public ExprNode
 {
 	public:
@@ -131,6 +143,9 @@ class IntegerLiteralNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// String Literal Node
+/// </summary>
 class StringLiteralNode : public ExprNode
 {
 	public:
@@ -139,6 +154,9 @@ class StringLiteralNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Float Literal Node
+/// </summary>
 class FloatLiteralNode : public ExprNode
 {
 	public:
@@ -147,6 +165,9 @@ class FloatLiteralNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Boolean Literal Node
+/// </summary>
 class BoolLiteralNode : public ExprNode
 {
 	public:
@@ -155,6 +176,9 @@ class BoolLiteralNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Double Literal Node
+/// </summary>
 class DoubleLiteralNode : public ExprNode
 {
 	public:
@@ -163,6 +187,9 @@ class DoubleLiteralNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Variable Expression Node
+/// </summary>
 class VarExprNode : public ExprNode
 {
 	public:
@@ -171,11 +198,16 @@ class VarExprNode : public ExprNode
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// If Statement Node
+/// </summary>
 class IfStatementNode : public StmtNode
 {
 public:
 	std::unique_ptr<ExprNode> condition;
 	std::unique_ptr<BlockNode> body;
+	std::unique_ptr<BlockNode> elseBody;
+	std::vector<std::unique_ptr<IfStatementNode>> elseIfs;
 
 	IfStatementNode();
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
@@ -232,11 +264,24 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+class HtmlStmtRootNode : public StmtNode {
+	public:
+		std::unique_ptr<BlockNode> body;
+		EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
 class HtmlStmtNode : public StmtNode {
 public:
 	std::string tagName;
-	std::string content;
 	std::map<std::string, std::string> attributes;
 	bool selfClosing = false;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
+class HtmlTextNode : public StmtNode {
+	
+public:
+	HtmlTextNode() = default;
+	std::string content;
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
