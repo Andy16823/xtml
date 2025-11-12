@@ -39,11 +39,12 @@ bool Parser::match(TokenType type, std::string value)
 	return false;
 }
 
-std::unique_ptr<ASTNode> Parser::parse()
+std::unique_ptr<XtmlBlockNode> Parser::parse()
 {
-	// Since we are parsing a function definition at the top level
-	auto functionNode = parseFunction();
-	return functionNode;
+	// Toplevel parse block since we dont start with functions
+	auto xtmlBlock = std::make_unique<XtmlBlockNode>();
+	xtmlBlock->body = parseBlock();
+	return xtmlBlock;
 }
 
 std::unique_ptr<FunctionNode> Parser::parseFunction()

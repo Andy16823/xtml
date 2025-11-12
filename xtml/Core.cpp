@@ -176,8 +176,8 @@ std::string Core::buildFile(const std::string& path)
 			Lexer lexer(block.content);
 			auto tokens = lexer.tokenize();
 			Parser parser(tokens);
-			auto functionNode = parser.parse();
-			auto result = functionNode->evaluate(vars);
+			auto xmltBlock = parser.parse();
+			auto result = xmltBlock->evaluate(vars);
 			content = Utils::replace(content, block.full, result.content);
 		}
 	}

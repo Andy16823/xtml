@@ -14,6 +14,11 @@ struct XtmlTag {
 	std::map<std::string, std::string> attributes;
 };
 
+struct Program {
+	std::map<std::string, var> vars;
+	std::map<std::string, std::unique_ptr<FunctionNode>> functions;
+};
+
 class Core
 {
 public:

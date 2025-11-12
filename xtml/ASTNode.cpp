@@ -166,16 +166,8 @@ EvalResult ContinueNode::evaluate(std::map<std::string, var>& vars)
 EvalResult FunctionNode::evaluate(std::map<std::string, var>& vars)
 {
 	EvalResult result;
-
-	// First move global vars to local scope
-	this->localVars = Vars::merge_vars(vars, this->localVars);
-
 	// Evaluate body
 	result = merge_results(result, this->body->evaluate(vars));
-
-	// Merge back local vars to global scope
-	vars = Vars::merge_vars(vars, this->localVars);
-
 	// Return result
 	return result;
 }
@@ -371,5 +363,22 @@ EvalResult UnaryExprNode::evaluate(std::map<std::string, var>& vars)
 	} else {
 		result.content = operandResult.content; 
 	}
+	return result;
+}
+
+EvalResult XtmlBlockNode::evaluate(std::map<std::string, var>& vars)
+{
+	EvalResult result;
+
+	// First move global vars to local scope
+	this->localVars = Vars::merge_vars(vars, this->localVars);
+
+	// Evaluate body
+	result = merge_results(result, this->body->evaluate(vars));
+
+	// Merge back local vars to global scope
+	vars = Vars::merge_vars(vars, this->localVars);
+
+	// Return result
 	return result;
 }

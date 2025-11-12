@@ -85,6 +85,14 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+class XtmlBlockNode : public ASTNode {
+public:
+	std::map<std::string, var> localVars;
+	std::unique_ptr<BlockNode> body;
+
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
 /// <summary>
 /// Function Node
 /// </summary>
@@ -93,7 +101,6 @@ class FunctionNode : public ASTNode {
 		std::string name;
 		std::vector<std::unique_ptr<ExprNode>> arguments;
 		std::unique_ptr<BlockNode> body;
-		std::map<std::string, var> localVars;
 		EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
