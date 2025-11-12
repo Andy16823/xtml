@@ -1,4 +1,3 @@
 ﻿  ASTNode.cpp
 C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(256,1): warning C4715: "ExprStatementNode::evaluate": Nicht alle Codepfade geben einen Wert zurück.
-  LINK : C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe wurde nicht gefunden oder beim letzten inkrementellen Linkvorgang nicht erstellt; vollständiger Link wird durchgeführt.
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe

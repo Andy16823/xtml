@@ -260,15 +260,17 @@ EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
 	std::ostringstream out;
 	out << "<" << tagName;
 	for (auto& [key, value] : attributes) {
-		out << " " << key << "=\"" << value << "\"";
+		std::string exvalue = Core::resolve_placeholders(value, vars);
+		out << " " << key << "=\"" << exvalue << "\"";
 	}
 	
 	if (selfClosing) {
 		out << " />";
 	}
 	else {
+		std::string excontent = Core::resolve_placeholders(content, vars);
 		out << ">";
-		out << content;
+		out << excontent;
 		out << "</" << tagName << ">";
 	}
 
