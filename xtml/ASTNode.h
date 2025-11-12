@@ -6,6 +6,7 @@
 #include <vector>
 #include "Statements.h"
 #include <stdint.h>
+#include "Core.h"
 
 
 
@@ -28,32 +29,10 @@ protected:
 public:
 	std::vector<std::unique_ptr<ASTNode>> children;
 	virtual ~ASTNode() = default;
-	virtual EvalResult evaluate(std::map<std::string, var>& vars) = 0;
+	virtual EvalResult evaluate(Program& program) = 0;
 
 	void add_child(std::unique_ptr<ASTNode> child) {
 		children.push_back(move(child));
-	}
-};
-
-/// <summary>
-/// AST Root Node
-/// </summary>
-class ASTRoot
-{
-public:
-	std::vector<std::unique_ptr<ASTNode>> children;
-	std::map<std::string, var> vars;
-	std::string built_content;
-	EvalResult evaluate();
-
-	void add_child(std::unique_ptr<ASTNode> child) {
-		children.push_back(move(child));
-	}
-
-	void merge_vars(const std::map<std::string, var>& new_vars) {
-		for (const auto& [key, value] : new_vars) {
-			vars[key] = value;
-		}
 	}
 };
 
@@ -63,7 +42,7 @@ public:
 class StmtNode : public ASTNode
 {
 	public:
-	EvalResult evaluate(std::map<std::string, var>& vars);
+	EvalResult evaluate(Program& program);
 };
 
 
@@ -73,7 +52,7 @@ class StmtNode : public ASTNode
 class ExprNode : public ASTNode
 {
 	public:
-	EvalResult evaluate(std::map<std::string, var>& vars);
+	EvalResult evaluate(Program& program);
 };
 
 /// <summary>
@@ -82,15 +61,16 @@ class ExprNode : public ASTNode
 class BlockNode : public ASTNode
 {
 public:
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 class XtmlBlockNode : public ASTNode {
 public:
-	std::map<std::string, var> localVars;
+	Program localProgram;
 	std::unique_ptr<BlockNode> body;
 
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
+	void mergePrograms(const Program& source, Program& destination);
 };
 
 /// <summary>
@@ -101,7 +81,7 @@ class FunctionNode : public ASTNode {
 		std::string name;
 		std::vector<std::unique_ptr<ExprNode>> arguments;
 		std::unique_ptr<BlockNode> body;
-		EvalResult evaluate(std::map<std::string, var>& vars) override;
+		EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -115,7 +95,7 @@ public:
 
 	VarDeclNode() = default;
 	VarDeclNode(const std::string& name, std::unique_ptr<ExprNode> expr) : name(name), expression(std::move(expr)) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -127,7 +107,7 @@ public:
 	std::unique_ptr<ExprNode> left;
 	std::unique_ptr<ExprNode> right;
 	std::string op; // Operator
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 class UnaryExprNode : public ExprNode
@@ -136,7 +116,7 @@ class UnaryExprNode : public ExprNode
 	std::unique_ptr<ExprNode> operand;
 	std::string op; 
 	bool isPrefix;
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -146,7 +126,7 @@ class ExprStatementNode : public StmtNode
 {
 	public:
 	std::unique_ptr<ExprNode> expression;
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -157,7 +137,7 @@ class IntegerLiteralNode : public ExprNode
 	public:
 	int64_t value;
 	IntegerLiteralNode(int64_t val) : value(val) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -168,7 +148,7 @@ class StringLiteralNode : public ExprNode
 	public:
 	std::string value;
 	StringLiteralNode(const std::string& val) : value(val) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -179,7 +159,7 @@ class FloatLiteralNode : public ExprNode
 	public:
 	double value;
 	FloatLiteralNode(double val) : value(val) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -190,7 +170,7 @@ class BoolLiteralNode : public ExprNode
 	public:
 	bool value;
 	BoolLiteralNode(bool val) : value(val) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -201,7 +181,7 @@ class DoubleLiteralNode : public ExprNode
 	public:
 	double value;
 	DoubleLiteralNode(double val) : value(val) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -212,7 +192,7 @@ class VarExprNode : public ExprNode
 	public:
 	std::string name;
 	VarExprNode(const std::string& varName) : name(varName) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -227,7 +207,7 @@ public:
 	std::vector<std::unique_ptr<IfStatementNode>> elseIfs;
 
 	IfStatementNode();
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -239,7 +219,7 @@ private:
 	std::string m_value;
 public:
 	TextNode(const std::string& value) : m_value(value) {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -252,7 +232,7 @@ public:
 	std::vector<std::unique_ptr<BlockNode>> body;
 
 	WhileNode() = default;
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -266,7 +246,7 @@ public:
 	std::unique_ptr<ExprNode> increment;
 	std::unique_ptr<BlockNode> body;
 	ForNode() = default;
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -277,7 +257,7 @@ public:
 	std::unique_ptr<StmtNode> declaration;
 	std::unique_ptr<BlockNode> body;
 	ForEachNode(const std::string& expression, const std::string& body);
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -287,7 +267,7 @@ class BreakNode : public ASTNode
 {
 public:
 	BreakNode() {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -297,7 +277,7 @@ class ContinueNode : public ASTNode
 {
 public:
 	ContinueNode() {}
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -306,7 +286,7 @@ public:
 class HtmlStmtRootNode : public StmtNode {
 	public:
 		std::unique_ptr<BlockNode> body;
-		EvalResult evaluate(std::map<std::string, var>& vars) override;
+		EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -317,7 +297,7 @@ public:
 	std::string tagName;
 	std::map<std::string, std::string> attributes;
 	bool selfClosing = false;
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -327,5 +307,5 @@ class HtmlTextNode : public StmtNode {
 public:
 	HtmlTextNode() = default;
 	std::string content;
-	EvalResult evaluate(std::map<std::string, var>& vars) override;
+	EvalResult evaluate(Program& program) override;
 };

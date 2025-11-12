@@ -7,6 +7,7 @@
 #include "Statements.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "ASTNode.h"
 
 using namespace std;
 
@@ -164,12 +165,11 @@ string Core::build_file(const string& path, map<string, var>& vars)
 
 std::string Core::buildFile(const std::string& path)
 {
-	auto ast_root = std::make_unique<ASTRoot>();
 	auto content = Utils::read_file(path);
 	auto blocks = Core::find_xtml_tags(content);
 
 	// Build global vars from self-closing tags
-	std::map<string, var> vars;
+	Program program;
 
 	for (const auto& block : blocks) {
 		if (!block.self_closing) {
@@ -177,11 +177,11 @@ std::string Core::buildFile(const std::string& path)
 			auto tokens = lexer.tokenize();
 			Parser parser(tokens);
 			auto xmltBlock = parser.parse();
-			auto result = xmltBlock->evaluate(vars);
+			auto result = xmltBlock->evaluate(program);
 			content = Utils::replace(content, block.full, result.content);
 		}
 	}
-	content = Core::resolve_placeholders(content, vars);
+	content = Core::resolve_placeholders(content, program.vars);
 	Utils::print_ln("Build completed.");
 	return content;
 }

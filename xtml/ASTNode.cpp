@@ -23,7 +23,7 @@ EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b)
 	return result;
 }
 
-EvalResult VarDeclNode::evaluate(std::map<std::string, var>& vars)
+EvalResult VarDeclNode::evaluate(Program& program)
 {
 	// Declare a variable
 	var value;
@@ -34,29 +34,20 @@ EvalResult VarDeclNode::evaluate(std::map<std::string, var>& vars)
 	}
 
 	// Evaluate the expression and assign to variable
-	EvalResult eval = expression->evaluate(vars);
+	EvalResult eval = expression->evaluate(program);
 	value.value = eval.content;
 	value.type = Utils::predictVarType(value.value);
-	vars[name] = value;
+	program.vars[name] = value;
 
 	// No output for variable declaration
 	return {};
 }
 
-EvalResult ASTRoot::evaluate()
+EvalResult BlockNode::evaluate(Program& program)
 {
 	EvalResult result;
 	for (auto& child : children) {
-		result.content += child->evaluate(vars).content;
-	}
-	return result;
-}
-
-EvalResult BlockNode::evaluate(std::map<std::string, var>& vars)
-{
-	EvalResult result;
-	for (auto& child : children) {
-		result = merge_results(result, child->evaluate(vars));
+		result = merge_results(result, child->evaluate(program));
 	}
 	return result;
 }
@@ -66,113 +57,114 @@ IfStatementNode::IfStatementNode()
 	
 }
 
-EvalResult IfStatementNode::evaluate(std::map<std::string, var>& vars)
+EvalResult IfStatementNode::evaluate(Program& program)
 {
 	EvalResult result;
 
 	// Try if condition
-	auto condResult = condition->evaluate(vars);
+	auto condResult = condition->evaluate(program);
 	if(condResult.content == "true") {
-		result = body->evaluate(vars);
+		result = body->evaluate(program);
 		return result;	// Return because if was executed
 	}
 	
 	// Try else ifs
 	for (auto& elseif : elseIfs) {
-		auto elseIfresult = elseif->condition->evaluate(vars);
+		auto elseIfresult = elseif->condition->evaluate(program);
 		if (elseIfresult.content == "true") {
-			result = elseif->body->evaluate(vars);
+			result = elseif->body->evaluate(program);
 			return result; // Return because else if was executed
 		}
 	}
 
 	// Try else body
 	if(elseBody != nullptr) {
-		result = elseBody->evaluate(vars);
+		result = elseBody->evaluate(program);
 	}
 	return result;
 }
 
-EvalResult TextNode::evaluate(std::map<std::string, var>& vars)
+EvalResult TextNode::evaluate(Program& program)
 {
+	//TODO: Refactor here to ???
 	EvalResult result;
-	auto value = Vars::eval_expr(m_value, vars);
+	auto value = Vars::eval_expr(m_value, program.vars);
 	if (value.type != DT_UNKNOWN) {
 		result.content = value.value;
 	}
 	return result;
 }
 
-EvalResult WhileNode::evaluate(std::map<std::string, var>& vars)
+EvalResult WhileNode::evaluate(Program& program)
 {
 	EvalResult result;
 	return result;
 }
 
-EvalResult ForNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ForNode::evaluate(Program& program)
 {
 	EvalResult result;
 
 	// Declare init statement
 	if (init != nullptr) {
-		init->evaluate(vars);	// Initialize loop variable
+		init->evaluate(program);	// Initialize loop variable
 	}
 	else {
 		Utils::throw_err("Error: For loop missing initialization statement.");
 	}
 
 	// Evaluate condition
-	auto condResult = condition->evaluate(vars);
+	auto condResult = condition->evaluate(program);
 	while (condResult.content == "true") {
-		auto bodyResult = body->evaluate(vars);
+		auto bodyResult = body->evaluate(program);
 		result = merge_results(result, bodyResult);
 		// TODO: Handle break/continue
 		
 		// Execute increment
 		if (increment != nullptr) {
-			increment->evaluate(vars);
+			increment->evaluate(program);
 		}
 		else {
 			Utils::throw_err("Error: For loop missing increment statement.");
 		}
 
 		// Re-evaluate condition
-		condResult = condition->evaluate(vars);
+		condResult = condition->evaluate(program);
 	}
 
 	return result;
 }
 
-EvalResult ForEachNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ForEachNode::evaluate(Program& program)
 {
 	EvalResult result;
 	return result;
 }
 
-EvalResult BreakNode::evaluate(std::map<std::string, var>& vars)
+EvalResult BreakNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.should_break = true;
 	return result;
 }
 
-EvalResult ContinueNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ContinueNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.should_continue = true;
 	return result;
 }
 
-EvalResult FunctionNode::evaluate(std::map<std::string, var>& vars)
+EvalResult FunctionNode::evaluate(Program& program)
 {
 	EvalResult result;
 	// Evaluate body
-	result = merge_results(result, this->body->evaluate(vars));
+	result = merge_results(result, this->body->evaluate(program));
 	// Return result
 	return result;
 }
 
-EvalResult BinaryExprNode::evaluate(std::map<std::string, var>& vars)
+EvalResult BinaryExprNode::evaluate(Program& program)
 {
 	EvalResult result;
 
@@ -189,17 +181,17 @@ EvalResult BinaryExprNode::evaluate(std::map<std::string, var>& vars)
 		if (leftVar == nullptr) {
 			Utils::throw_err("Error: Left side of assignment must be a variable.");
 		}
-		auto rightResult = right->evaluate(vars);
-		if(vars.find(leftVar->name) == vars.end()) {
+		auto rightResult = right->evaluate(program);
+		if(program.vars.find(leftVar->name) == program.vars.end()) {
 			Utils::throw_err("Error: Undefined variable: " + leftVar->name);
 		}
-		vars[leftVar->name].value = rightResult.content;
+		program.vars[leftVar->name].value = rightResult.content;
 		return rightResult; // Return the assigned value
 	}
 
 	// Evaluate left and right expressions
-	auto leftResult = left->evaluate(vars);
-	auto rightResult = right->evaluate(vars);
+	auto leftResult = left->evaluate(program);
+	auto rightResult = right->evaluate(program);
 
 	// Create temp vars
 	var leftVar = var{ leftResult.content, Utils::predictVarType(leftResult.content) };
@@ -219,46 +211,46 @@ EvalResult BinaryExprNode::evaluate(std::map<std::string, var>& vars)
 	return result;
 }
 
-EvalResult IntegerLiteralNode::evaluate(std::map<std::string, var>& vars)
+EvalResult IntegerLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.content = std::to_string(value);
 	return result;
 }
 
-EvalResult StringLiteralNode::evaluate(std::map<std::string, var>& vars)
+EvalResult StringLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.content = value;
 	return result;
 }
 
-EvalResult FloatLiteralNode::evaluate(std::map<std::string, var>& vars)
+EvalResult FloatLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.content = std::to_string(value);
 	return result;
 }
 
-EvalResult BoolLiteralNode::evaluate(std::map<std::string, var>& vars)
+EvalResult BoolLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.content = value ? "true" : "false";
 	return result;
 }
 
-EvalResult DoubleLiteralNode::evaluate(std::map<std::string, var>& vars)
+EvalResult DoubleLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.content = std::to_string(value);
 	return result;
 }
 
-EvalResult VarExprNode::evaluate(std::map<std::string, var>& vars)
+EvalResult VarExprNode::evaluate(Program& program)
 {
 	EvalResult result;
-	if(vars.find(this->name) != vars.end()) {
-		result.content = vars[this->name].value;
+	if(program.vars.find(this->name) != program.vars.end()) {
+		result.content = program.vars[this->name].value;
 	}
 	else {
 		Utils::throw_err("Error: Undefined variable: " + this->name);
@@ -266,26 +258,26 @@ EvalResult VarExprNode::evaluate(std::map<std::string, var>& vars)
 	return result;
 }
 
-EvalResult StmtNode::evaluate(std::map<std::string, var>& vars)
+EvalResult StmtNode::evaluate(Program& program)
 {
 	EvalResult result;
 	return result;
 }
 
-EvalResult ExprNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ExprNode::evaluate(Program& program)
 {
 	EvalResult result;
 	return result;
 }
 
-EvalResult ExprStatementNode::evaluate(std::map<std::string, var>& vars)
+EvalResult ExprStatementNode::evaluate(Program& program)
 {
 	if (auto bexpr = dynamic_cast<BinaryExprNode*>(expression.get())) {
 		if (bexpr->op == "=") {
 			// Assignment operation
 			if (auto vv = dynamic_cast<VarExprNode*>(bexpr->left.get())) {
-				auto rightResult = bexpr->right->evaluate(vars);
-				vars[vv->name] = { rightResult.content, DT_STRING }; // Assume string type for simplicity
+				auto rightResult = bexpr->right->evaluate(program);
+				program.vars[vv->name] = { rightResult.content, DT_STRING }; // Assume string type for simplicity
 				EvalResult result;
 				return result;
 			}
@@ -295,7 +287,7 @@ EvalResult ExprStatementNode::evaluate(std::map<std::string, var>& vars)
 	Utils::throw_err("Error: Unsupported expression statement.");
 }
 
-EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
+EvalResult HtmlStmtNode::evaluate(Program& program)
 {
 	std::ostringstream out;
 	out << "<" << tagName;
@@ -310,7 +302,7 @@ EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
 	else {
 		out << ">";
 		for (auto& child : this->children) {
-			EvalResult childResult = child->evaluate(vars);
+			EvalResult childResult = child->evaluate(program);
 			out << childResult.content;
 		}
 		out << "</" << tagName << ">";
@@ -318,42 +310,42 @@ EvalResult HtmlStmtNode::evaluate(std::map<std::string, var>& vars)
 
 	EvalResult result;
 	result.content = out.str();
-	result.content = Core::resolve_placeholders(result.content, vars);
+	result.content = Core::resolve_placeholders(result.content, program.vars);
 	return result;
 }
 
-EvalResult HtmlStmtRootNode::evaluate(std::map<std::string, var>& vars)
+EvalResult HtmlStmtRootNode::evaluate(Program& program)
 {
 	EvalResult result;
-	result = body->evaluate(vars);
+	result = body->evaluate(program);
 	return result;
 }
 
-EvalResult HtmlTextNode::evaluate(std::map<std::string, var>& vars)
+EvalResult HtmlTextNode::evaluate(Program& program)
 {
 	EvalResult result;
 	result.content = content;
 	return result;
 }
 
-EvalResult UnaryExprNode::evaluate(std::map<std::string, var>& vars)
+EvalResult UnaryExprNode::evaluate(Program& program)
 {
 	// Check that operand is a variable
 	auto varexpr = dynamic_cast<VarExprNode*>(operand.get());
 	if(varexpr == nullptr) {
 		Utils::throw_err("Error: Unary operation must be on a variable.");
 	}
-	auto operandResult = varexpr->evaluate(vars);
+	auto operandResult = varexpr->evaluate(program);
 
 	// Check that variable exists
-	if(vars.find(varexpr->name) == vars.end()) {
+	if(program.vars.find(varexpr->name) == program.vars.end()) {
 		Utils::throw_err("Error: Undefined variable: " + varexpr->name);
 	}
-	auto varRef = vars[varexpr->name];
+	auto varRef = program.vars[varexpr->name];
 
 	// Perform unary operation and update variable
 	auto value = Vars::unaryOperation(varRef, op);
-	vars[varexpr->name] = value;
+	program.vars[varexpr->name] = value;
 
 	// Return the new value
 	EvalResult result;
@@ -366,19 +358,25 @@ EvalResult UnaryExprNode::evaluate(std::map<std::string, var>& vars)
 	return result;
 }
 
-EvalResult XtmlBlockNode::evaluate(std::map<std::string, var>& vars)
+EvalResult XtmlBlockNode::evaluate(Program& program)
 {
 	EvalResult result;
 
 	// First move global vars to local scope
-	this->localVars = Vars::merge_vars(vars, this->localVars);
+	this->mergePrograms(program, localProgram);
 
 	// Evaluate body
-	result = merge_results(result, this->body->evaluate(vars));
+	result = merge_results(result, this->body->evaluate(this->localProgram));
 
 	// Merge back local vars to global scope
-	vars = Vars::merge_vars(vars, this->localVars);
+	this->mergePrograms(this->localProgram, program);
 
 	// Return result
 	return result;
+}
+
+void XtmlBlockNode::mergePrograms(const Program& source, Program& destination)
+{
+	auto vars = Vars::merge_vars(source.vars, destination.vars);
+	destination.vars = vars;
 }

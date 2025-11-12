@@ -3,8 +3,9 @@
 #include <vector>
 #include <map>
 #include "Vars.h"
-#include "ASTNode.h"
 #include <memory>
+
+class FunctionNode;
 
 struct XtmlTag {
 	std::string full;
