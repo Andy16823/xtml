@@ -25,6 +25,7 @@ EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b)
 
 EvalResult VarDeclNode::evaluate(std::map<std::string, var>& vars)
 {
+	// Declare a variable
 	var value;
 	if(this->expression == nullptr) {
 		value.value = "";
@@ -32,10 +33,13 @@ EvalResult VarDeclNode::evaluate(std::map<std::string, var>& vars)
 		return EvalResult{}; // No expression to evaluate
 	}
 
+	// Evaluate the expression and assign to variable
 	EvalResult eval = expression->evaluate(vars);
 	value.value = eval.content;
 	value.type = Utils::predictVarType(value.value);
 	vars[name] = value;
+
+	// No output for variable declaration
 	return {};
 }
 
@@ -108,6 +112,34 @@ EvalResult WhileNode::evaluate(std::map<std::string, var>& vars)
 EvalResult ForNode::evaluate(std::map<std::string, var>& vars)
 {
 	EvalResult result;
+
+	// Declare init statement
+	if (init != nullptr) {
+		init->evaluate(vars);	// Initialize loop variable
+	}
+	else {
+		Utils::throw_err("Error: For loop missing initialization statement.");
+	}
+
+	// Evaluate condition
+	auto condResult = condition->evaluate(vars);
+	while (condResult.content == "true") {
+		auto bodyResult = body->evaluate(vars);
+		result = merge_results(result, bodyResult);
+		// TODO: Handle break/continue
+		
+		// Execute increment
+		if (increment != nullptr) {
+			increment->evaluate(vars);
+		}
+		else {
+			Utils::throw_err("Error: For loop missing increment statement.");
+		}
+
+		// Re-evaluate condition
+		condResult = condition->evaluate(vars);
+	}
+
 	return result;
 }
 
@@ -309,5 +341,35 @@ EvalResult HtmlTextNode::evaluate(std::map<std::string, var>& vars)
 {
 	EvalResult result;
 	result.content = content;
+	return result;
+}
+
+EvalResult UnaryExprNode::evaluate(std::map<std::string, var>& vars)
+{
+	// Check that operand is a variable
+	auto varexpr = dynamic_cast<VarExprNode*>(operand.get());
+	if(varexpr == nullptr) {
+		Utils::throw_err("Error: Unary operation must be on a variable.");
+	}
+	auto operandResult = varexpr->evaluate(vars);
+
+	// Check that variable exists
+	if(vars.find(varexpr->name) == vars.end()) {
+		Utils::throw_err("Error: Undefined variable: " + varexpr->name);
+	}
+	auto varRef = vars[varexpr->name];
+
+	// Perform unary operation and update variable
+	auto value = Vars::unaryOperation(varRef, op);
+	vars[varexpr->name] = value;
+
+	// Return the new value
+	EvalResult result;
+
+	if(this->isPrefix) {
+		result.content = value.value;
+	} else {
+		result.content = operandResult.content; 
+	}
 	return result;
 }

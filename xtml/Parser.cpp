@@ -102,6 +102,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseHtmlRootStatement(t);
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "for") {
+		return parseForStatement(t);
+	}
+
 	if (t.type == TokenType::Operator && t.value == "<") {
 		return parseHtmlStatement(t);
 	}
@@ -115,12 +119,36 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 
 std::unique_ptr<ExprNode> Parser::parseExpression()
 {
-	// Binary expressions, literals, identifiers etc.
+	auto token = peek();
+
+	// Check for unary prefix operators
+	if (token.type == TokenType::Operator && (token.value == "++" || token.value == "--")) {
+		get(); // Consume operator
+		auto unaryExpr = std::make_unique<UnaryExprNode>();
+		unaryExpr->op = token.value;
+		unaryExpr->isPrefix = true;
+		unaryExpr->operand = parsePrimary();
+		return unaryExpr;
+	}
+
+	// If no unary prefix, parse primary expression
 	auto left = parsePrimary();
 	const Token& t = peek();
 	if (t.type == TokenType::Operator) {
+
+		// Check for unary postfix operators
+		if (t.value == "++" || t.value == "--") {
+			get(); // Consume operator
+			auto unaryExpr = std::make_unique<UnaryExprNode>();
+			unaryExpr->op = t.value;
+			unaryExpr->isPrefix = false;
+			unaryExpr->operand = std::move(left);
+			return unaryExpr;
+		}
+
+		// If not postfix, it must be binary
 		std::string op = t.value;
-		get(); // Consume operator
+		get();
 		auto right = parseExpression();
 		auto binExpr = std::make_unique<BinaryExprNode>();
 		binExpr->left = std::move(left);
@@ -129,6 +157,7 @@ std::unique_ptr<ExprNode> Parser::parseExpression()
 		return binExpr;
 	}
 
+	// If no operators, return the primary expression
 	return left;
 }
 
@@ -351,4 +380,27 @@ std::unique_ptr<HtmlTextNode> Parser::parseHtmlTextNode(const Token& token)
 	// Set content and return
 	textNode->content = Utils::trim(content.str());
 	return textNode;
+}
+
+std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)
+{
+	get(); // Consume 'for' keyword
+	auto forNode = std::make_unique<ForNode>();
+	if (!match(TokenType::Symbol, "(")) {
+		Utils::throw_err("Error: Expected '(' after 'for' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	// Parse initialization No semicolon removal here, handled in parseStatement
+	forNode->init = parseStatement();
+	// Parse condition
+	forNode->condition = parseExpression();
+	if(!match(TokenType::Symbol, ";")) {
+		Utils::throw_err("Error: Expected ';' after for loop condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	// Parse increment
+	forNode->increment = parseExpression();
+	if (!match(TokenType::Symbol, ")")) {
+		Utils::throw_err("Error: Expected ')' after for loop clauses at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	forNode->body = parseBracketBlock();
+	return forNode;
 }

@@ -619,6 +619,21 @@ bool Vars::compareBooleans(bool left, bool right, const std::string& op)
 	Utils::throw_err("Error: Unknown comparison operation: " + op);
 }
 
+var Vars::unaryOperation(const var& operand, const std::string& op)
+{
+	if(operand.type != DT_NUMBER) {
+		Utils::throw_err("Error: Unary operation on non-number type.");
+	}
+	int64_t num = std::stoll(operand.value);
+	if (op == "--") {
+		return var{ std::to_string(num - 1), DT_NUMBER };
+	}
+	if (op == "++") {
+		return var{ std::to_string(num + 1), DT_NUMBER };
+	}
+	Utils::throw_err("Error: Unknown unary operation: " + op);
+}
+
 BinaryOpType Vars::get_binary_op_type(const std::string& op)
 {
 	if (op == "=") {

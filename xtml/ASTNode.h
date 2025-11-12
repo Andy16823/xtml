@@ -10,9 +10,10 @@
 
 
 struct EvalResult {
-	std::string content;
-	bool should_break = false;
-	bool should_continue = false;
+	std::string content; // The evaluated content TODO: rename to value?
+	bool should_break = false; // For loop control
+	bool should_continue = false; // For loop control
+	bool print_result = true;	// Whether the result should be printed to output
 };
 
 
@@ -122,6 +123,15 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+class UnaryExprNode : public ExprNode
+{
+	public:
+	std::unique_ptr<ExprNode> operand;
+	std::string op; 
+	bool isPrefix;
+	EvalResult evaluate(std::map<std::string, var>& vars) override;
+};
+
 /// <summary>
 /// Expression Statement Node
 /// </summary>
@@ -213,6 +223,9 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Text Node
+/// </summary>
 class TextNode : public ASTNode
 {
 private:
@@ -222,6 +235,9 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// While Node
+/// </summary>
 class WhileNode : public ASTNode
 {
 public:
@@ -232,16 +248,23 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
-class ForNode : public ASTNode
+/// <summary>
+/// For Node
+/// </summary>
+class ForNode : public StmtNode
 {
 public:
 	std::unique_ptr<StmtNode> init;
 	std::unique_ptr<ExprNode> condition;
-	std::unique_ptr<StmtNode> increment;
+	std::unique_ptr<ExprNode> increment;
+	std::unique_ptr<BlockNode> body;
 	ForNode() = default;
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// For Each Node
+/// </summary>
 class ForEachNode : public ASTNode {
 public:
 	std::unique_ptr<StmtNode> declaration;
@@ -250,6 +273,9 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Break Node
+/// </summary>
 class BreakNode : public ASTNode
 {
 public:
@@ -257,6 +283,9 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Continue Node
+/// </summary>
 class ContinueNode : public ASTNode
 {
 public:
@@ -264,12 +293,18 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// HTML Statement Root Node
+/// </summary>
 class HtmlStmtRootNode : public StmtNode {
 	public:
 		std::unique_ptr<BlockNode> body;
 		EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Html Statement Node
+/// </summary>
 class HtmlStmtNode : public StmtNode {
 public:
 	std::string tagName;
@@ -278,8 +313,10 @@ public:
 	EvalResult evaluate(std::map<std::string, var>& vars) override;
 };
 
+/// <summary>
+/// Html Text Node
+/// </summary>
 class HtmlTextNode : public StmtNode {
-	
 public:
 	HtmlTextNode() = default;
 	std::string content;

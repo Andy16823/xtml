@@ -60,6 +60,8 @@ public:
 	static bool compareNumbers(int64_t left, int64_t right, const std::string& op);
 	static bool compareBooleans(bool left, bool right, const std::string& op);
 
+	static var unaryOperation(const var& operand, const std::string& op);
+
 	static BinaryOpType get_binary_op_type(const std::string& op);
 
 };
