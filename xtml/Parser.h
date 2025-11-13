@@ -21,7 +21,7 @@ public:
 	}
 
 	std::unique_ptr<XtmlBlockNode> parse();
-	std::unique_ptr<FunctionNode> parseFunction();		// Parse function definitions
+	std::unique_ptr<FunctionDeclNode> parseFunction();		// Parse function definitions
 	std::unique_ptr<BlockNode> parseBlock();			// Parse code blocks
 	std::unique_ptr<BlockNode> parseBracketBlock();
 	std::unique_ptr<StmtNode> parseStatement();			// Parse individual statements

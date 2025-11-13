@@ -41,17 +41,18 @@ public:
 /// </summary>
 class StmtNode : public ASTNode
 {
-	public:
+	
+public:
 	EvalResult evaluate(Program& program);
 };
-
 
 /// <summary>
 /// Expression Node
 /// </summary>
 class ExprNode : public ASTNode
 {
-	public:
+	
+public:
 	EvalResult evaluate(Program& program);
 };
 
@@ -77,15 +78,36 @@ public:
 /// Function Node
 /// </summary>
 class FunctionNode : public StmtNode {
-	public:
-		Program localProgram;
 
-		std::string name;
-		std::vector<std::unique_ptr<ExprNode>> arguments;
-		std::unique_ptr<BlockNode> body;
-		EvalResult evaluate(Program& program) override;
+public:
+	Program localProgram;
+	std::string name;
+	std::vector<std::unique_ptr<ExprNode>> arguments;
+	std::unique_ptr<BlockNode> body;
+	EvalResult evaluate(Program& program) override;
+	void inheritProgram(const Program& source);
+	EvalResult callFunction(Program& program, const std::vector<std::string>& argValues);
+};
 
-		void inheritProgram(const Program& source);
+/// <summary>
+/// Function Declaration Node
+/// </summary>
+class FunctionDeclNode : public StmtNode {
+
+public:
+	std::unique_ptr<FunctionNode> function;
+	FunctionDeclNode() = default;
+	FunctionDeclNode(std::unique_ptr<FunctionNode> func) : function(std::move(func)) {}
+	EvalResult evaluate(Program& program) override;
+};
+
+class FunctionCallNode : public ExprNode {
+	
+public:
+	std::string functionName;
+	std::vector<std::unique_ptr<ExprNode>> arguments;
+	FunctionCallNode() = default;
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>

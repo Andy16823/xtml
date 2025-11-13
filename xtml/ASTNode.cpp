@@ -166,8 +166,23 @@ EvalResult FunctionNode::evaluate(Program& program)
 
 void FunctionNode::inheritProgram(const Program& source)
 {
-	// Only functions are inherited for now
+	// TODO: Implement later
+}
 
+EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::string>& argValues)
+{
+	for (size_t i = 0; i < this->arguments.size(); i++) {
+		auto argExpr = dynamic_cast<VarExprNode*>(this->arguments[i].get());
+		if (argExpr == nullptr) {
+			Utils::throw_err("Error: Function argument must be a variable.");
+		}
+		var value;
+		value.value = argValues[i];
+		value.type = Utils::predictVarType(value.value);
+		this->localProgram.vars[argExpr->name] = value;
+	}
+
+	return this->body->evaluate(this->localProgram);
 }
 
 EvalResult BinaryExprNode::evaluate(Program& program)
@@ -278,19 +293,7 @@ EvalResult ExprNode::evaluate(Program& program)
 
 EvalResult ExprStatementNode::evaluate(Program& program)
 {
-	if (auto bexpr = dynamic_cast<BinaryExprNode*>(expression.get())) {
-		if (bexpr->op == "=") {
-			// Assignment operation
-			if (auto vv = dynamic_cast<VarExprNode*>(bexpr->left.get())) {
-				auto rightResult = bexpr->right->evaluate(program);
-				program.vars[vv->name] = { rightResult.content, DT_STRING }; // Assume string type for simplicity
-				EvalResult result;
-				return result;
-			}
-			Utils::throw_err("Error: Left side of assignment must be a variable.");
-		}
-	}
-	Utils::throw_err("Error: Unsupported expression statement.");
+	return this->expression->evaluate(program);
 }
 
 EvalResult HtmlStmtNode::evaluate(Program& program)
@@ -385,4 +388,31 @@ void XtmlBlockNode::mergePrograms(const Program& source, Program& destination)
 {
 	auto vars = Vars::merge_vars(source.vars, destination.vars);
 	destination.vars = vars;
+	destination.functions.insert(source.functions.begin(), source.functions.end());
+}
+
+EvalResult FunctionDeclNode::evaluate(Program& program)
+{
+	FunctionCall funcCall;
+	funcCall.name = function->name;
+	funcCall.function = function.get();
+	program.functions[function->name] = funcCall;
+
+	return {};
+}
+
+EvalResult FunctionCallNode::evaluate(Program& program)
+{
+	EvalResult result;
+	if (program.functions.find(this->functionName) == program.functions.end()) {
+		Utils::throw_err("Error: Undefined function: " + this->functionName);
+	}
+	auto function = program.functions[this->functionName].function;
+
+	std::vector<std::string> argValues;
+	for (auto& arg : arguments) {
+		auto argResult = arg->evaluate(program);
+		argValues.push_back(argResult.content);
+	}
+	return function->callFunction(program, argValues);
 }

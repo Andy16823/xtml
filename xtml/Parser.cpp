@@ -47,7 +47,7 @@ std::unique_ptr<XtmlBlockNode> Parser::parse()
 	return xtmlBlock;
 }
 
-std::unique_ptr<FunctionNode> Parser::parseFunction()
+std::unique_ptr<FunctionDeclNode> Parser::parseFunction()
 {
 	get(); // Consume 'function' keyword
 	auto function = std::make_unique<FunctionNode>();
@@ -83,8 +83,7 @@ std::unique_ptr<FunctionNode> Parser::parseFunction()
 
 	// Parse function body
 	function->body = parseBracketBlock();
-
-	return function;
+	return std::make_unique<FunctionDeclNode>(std::move(function));
 }
 
 std::unique_ptr<BlockNode> Parser::parseBlock()
@@ -225,7 +224,21 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 	if (t.type == TokenType::Identifier) {
 		if (match(TokenType::Symbol, "("))
 		{
-			// Function call parsing can go here
+			auto funcCall = std::make_unique<FunctionCallNode>();
+			funcCall->functionName = t.value;
+			while (true) {
+				auto expr = parseExpression();
+				if (expr != nullptr) {
+					funcCall->arguments.push_back(std::move(expr));
+				}
+				if (!match(TokenType::Symbol, ",")) {
+					if (!match(TokenType::Symbol, ")")) {
+						Utils::throw_err("Error");
+					}
+					break;
+				}
+			}
+			return funcCall;
 		}
 		else {
 			return std::make_unique<VarExprNode>(t.value);

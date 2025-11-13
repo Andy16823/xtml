@@ -15,9 +15,14 @@ struct XtmlTag {
 	std::map<std::string, std::string> attributes;
 };
 
+struct FunctionCall {
+	std::string name;
+	FunctionNode* function = nullptr;
+};
+
 struct Program {
 	std::map<std::string, var> vars;
-	std::map<std::string, std::unique_ptr<FunctionNode>> functions;
+	std::map<std::string, FunctionCall> functions;
 };
 
 class Core
