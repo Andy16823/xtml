@@ -508,8 +508,15 @@ void Core::mergePrograms(const Program& source, Program& destination)
 		destination.vars[key] = value;
 	}
 	// Merge functions
+	Core::mergeProgrammFunctions(source, destination);
+
+	// Merge path
+	destination.path = source.path;
+}
+
+void Core::mergeProgrammFunctions(const Program& source, Program& destination)
+{
 	for (const auto& [key, funcCall] : source.functions) {
 		destination.functions[key] = funcCall;
 	}
-	destination.path = source.path;
 }

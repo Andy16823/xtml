@@ -11,7 +11,16 @@ using namespace std;
 
 bool Utils::is_number(const std::string& s)
 {
-	return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+	try {
+		size_t pos;
+		std::stoi(s, &pos);
+
+		// pos == Länge ? gesamte Zeichenkette ist eine Zahl
+		return pos == s.length();
+	}
+	catch (...) {
+		return false;
+	}
 }
 
 bool Utils::is_alpha(const std::string& s)

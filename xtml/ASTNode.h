@@ -322,12 +322,18 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+class HtmlBlockNode : public ASTNode {
+	
+public:
+	EvalResult evaluate(Program& program) override;
+};
+
 /// <summary>
 /// HTML Statement Root Node
 /// </summary>
 class HtmlStmtRootNode : public StmtNode {
 	public:
-		std::unique_ptr<BlockNode> body;
+		std::unique_ptr<HtmlBlockNode> body;
 		EvalResult evaluate(Program& program) override;
 };
 
@@ -348,6 +354,7 @@ public:
 class HtmlTextNode : public StmtNode {
 public:
 	HtmlTextNode() = default;
+	HtmlTextNode(const std::string& text) : content(text) {}
 	std::string content;
 	EvalResult evaluate(Program& program) override;
 };

@@ -33,6 +33,7 @@ public:
 	std::unique_ptr<ExprStatementNode> parseExprStatement(const Token& token); // Parse expression statements
 	std::unique_ptr<IfStatementNode> parseIfStatement(const Token& token); // Parse if statements 
 	std::unique_ptr<HtmlStmtRootNode> parseHtmlRootStatement(const Token& token); // Parse HTML root statements
+	std::unique_ptr<HtmlBlockNode> parseHtmlBlockNode(); // Parse HTML block nodes
 	std::unique_ptr<HtmlStmtNode> parseHtmlStatement(const Token& token); // Parse HTML statements
 	std::unique_ptr<HtmlTextNode> parseHtmlTextNode(const Token& token); // Parse HTML text nodes
 	std::unique_ptr<ReturnNode> parseReturnStatement(const Token& token); // Parse return statements

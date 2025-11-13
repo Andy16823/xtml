@@ -1,2 +1,16 @@
 ﻿  ASTNode.cpp
+  Vars.cpp
+  Code wird generiert...
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(343,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(386,1): warning C4715: "Vars::eval_func_expr": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(463,1): warning C4715: "Vars::binaryOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(475,1): warning C4715: "Vars::stringOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(563,1): warning C4715: "Vars::compareOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(544,1): warning C4715: "Vars::booleanOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(526,1): warning C4715: "Vars::numericOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(586,1): warning C4715: "Vars::compareStrings": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(609,1): warning C4715: "Vars::compareNumbers": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(620,1): warning C4715: "Vars::compareBooleans": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(642,1): warning C4715: "Vars::unaryOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(376,1): warning C4715: "UnaryExprNode::evaluate": Nicht alle Codepfade geben einen Wert zurück.
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe

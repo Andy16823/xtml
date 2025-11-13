@@ -166,7 +166,7 @@ std::unique_ptr<ExprNode> Parser::parseExpression()
 	auto token = peek();
 
 	// Check for unary prefix operators
-	if (token.type == TokenType::Operator && (token.value == "++" || token.value == "--")) {
+	if (token.type == TokenType::Operator && (token.value == "++" || token.value == "--" || token.value == "+" || token.value == "-")) {
 		get(); // Consume operator
 		auto unaryExpr = std::make_unique<UnaryExprNode>();
 		unaryExpr->op = token.value;
@@ -349,8 +349,46 @@ std::unique_ptr<HtmlStmtRootNode> Parser::parseHtmlRootStatement(const Token& to
 {
 	get(); // Consume 'html' keyword
 	auto htmlRoot = std::make_unique<HtmlStmtRootNode>();
-	htmlRoot->body = parseBracketBlock();
+	htmlRoot->body = parseHtmlBlockNode();
 	return htmlRoot;
+}
+
+std::unique_ptr<HtmlBlockNode> Parser::parseHtmlBlockNode()
+{
+	// Check for opening {
+	if(!match(TokenType::Symbol, "{")) {
+		Utils::throw_err("Error: Expected '{' to start HTML block at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+	}
+
+	// Create HTML block node
+	auto htmlBlock = std::make_unique<HtmlBlockNode>();
+	
+	// Parse until closing }
+	while (!match(TokenType::Symbol, "}")) {
+		const auto& t = peek();
+		if(peek().type == TokenType::EndOfFile) {
+			Utils::throw_err("Error: Unexpected end of file while parsing HTML block at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+		}
+
+		// Check for HTML statement
+		if(t.type == TokenType::Operator && t.value == "<") {
+			auto htmlStmt = parseHtmlStatement(t);
+			htmlBlock->add_child(std::move(htmlStmt));
+			continue;
+		}
+
+		// Check for string literal
+		if (t.type == TokenType::StringLiteral) {
+			auto htmlTextNode = std::make_unique<HtmlTextNode>(t.value);
+			htmlBlock->add_child(std::move(htmlTextNode));
+			get();
+			continue;
+		}
+		
+		// Otherwise, error
+		Utils::throw_err("Error: Unexpected token '" + t.value + "' in HTML block at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+	}
+	return htmlBlock;
 }
 
 std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)

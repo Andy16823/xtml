@@ -49,5 +49,6 @@ public:
 	static std::vector<std::string> split_statements(const std::string& input);
 	static std::string extract_code_section(const std::string& input);
 	static void mergePrograms(const Program& source, Program& destination);
+	static void mergeProgrammFunctions(const Program& source, Program& destination);
 };
 

@@ -168,6 +168,7 @@ EvalResult FunctionNode::evaluate(Program& program)
 
 EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::string>& argValues)
 {
+	// Bind arguments to local program variables
 	for (size_t i = 0; i < this->arguments.size(); i++) {
 		auto argExpr = dynamic_cast<VarExprNode*>(this->arguments[i].get());
 		if (argExpr == nullptr) {
@@ -178,6 +179,9 @@ EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::s
 		value.type = Utils::predictVarType(value.value);
 		this->localProgram.vars[argExpr->name] = value;
 	}
+
+	// Bind global functions to local program
+	Core::mergeProgrammFunctions(program, localProgram);
 
 	return this->body->evaluate(this->localProgram);
 }
@@ -316,7 +320,6 @@ EvalResult HtmlStmtNode::evaluate(Program& program)
 
 	EvalResult result;
 	result.content = out.str();
-	result.content = Core::resolve_placeholders(result.content, program.vars);
 	return result;
 }
 
@@ -337,31 +340,39 @@ EvalResult HtmlTextNode::evaluate(Program& program)
 EvalResult UnaryExprNode::evaluate(Program& program)
 {
 	// Check that operand is a variable
-	auto varexpr = dynamic_cast<VarExprNode*>(operand.get());
-	if(varexpr == nullptr) {
-		Utils::throw_err("Error: Unary operation must be on a variable.");
+	if (auto varexpr = dynamic_cast<VarExprNode*>(operand.get())) {
+		auto operandResult = varexpr->evaluate(program);
+
+		// Check that variable exists
+		if (program.vars.find(varexpr->name) == program.vars.end()) {
+			Utils::throw_err("Error: Undefined variable: " + varexpr->name);
+		}
+		auto varRef = program.vars[varexpr->name];
+
+		// Perform unary operation and update variable
+		auto value = Vars::unaryOperation(varRef, op);
+		program.vars[varexpr->name] = value;
+
+		// Return the new value
+		EvalResult result;
+
+		if (this->isPrefix) {
+			result.content = value.value;
+		}
+		else {
+			result.content = operandResult.content;
+		}
+		return result;
 	}
-	auto operandResult = varexpr->evaluate(program);
-
-	// Check that variable exists
-	if(program.vars.find(varexpr->name) == program.vars.end()) {
-		Utils::throw_err("Error: Undefined variable: " + varexpr->name);
-	}
-	auto varRef = program.vars[varexpr->name];
-
-	// Perform unary operation and update variable
-	auto value = Vars::unaryOperation(varRef, op);
-	program.vars[varexpr->name] = value;
-
-	// Return the new value
-	EvalResult result;
-
-	if(this->isPrefix) {
+	
+	// Check that operand is a literal
+	if (auto intlit = dynamic_cast<IntegerLiteralNode*>(operand.get())) {
+		var varRef = { std::to_string(intlit->value), DT_NUMBER };
+		auto value = Vars::unaryOperation(varRef, op);
+		EvalResult result;
 		result.content = value.value;
-	} else {
-		result.content = operandResult.content; 
+		return result;
 	}
-	return result;
 }
 
 EvalResult XtmlBlockNode::evaluate(Program& program)
@@ -466,4 +477,17 @@ EvalResult RootNode::evaluate(Program& program)
 {
 	Utils::throw_err("Error: RootNode evaluate with Program parameter is not supported. Use the parameterless evaluate() method instead.");
 	return {};
+}
+
+EvalResult HtmlBlockNode::evaluate(Program& program)
+{
+	EvalResult result;
+
+	// Evaluate children
+	for(auto& child : children) {
+		result = merge_results(result, child->evaluate(program));
+	}
+	// Resolve all placeholders within the html block
+	result.content = Core::resolve_placeholders(result.content, program.vars); 
+	return result;
 }
