@@ -169,6 +169,8 @@ std::string Core::buildFile(const std::string& path)
 	auto blocks = Core::find_xtml_tags(content);
 
 	// Build global vars from self-closing tags
+	auto root = std::make_unique<RootNode>();
+
 	Program program;
 
 	for (const auto& block : blocks) {
@@ -179,6 +181,7 @@ std::string Core::buildFile(const std::string& path)
 			auto xmltBlock = parser.parse();
 			auto result = xmltBlock->evaluate(program);
 			content = Utils::replace(content, block.full, result.content);
+			root->nodes.push_back(std::move(xmltBlock));	// Store the block to prevent dangling pointer for functions
 		}
 	}
 	content = Core::resolve_placeholders(content, program.vars);

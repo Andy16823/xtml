@@ -35,6 +35,7 @@ public:
 	std::unique_ptr<HtmlStmtRootNode> parseHtmlRootStatement(const Token& token); // Parse HTML root statements
 	std::unique_ptr<HtmlStmtNode> parseHtmlStatement(const Token& token); // Parse HTML statements
 	std::unique_ptr<HtmlTextNode> parseHtmlTextNode(const Token& token); // Parse HTML text nodes
+	std::unique_ptr<ReturnNode> parseReturnStatement(const Token& token); // Parse return statements
 
 	// Loops
 	std::unique_ptr<ForNode> parseForStatement(const Token& token); // Parse for loops

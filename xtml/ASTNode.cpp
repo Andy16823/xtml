@@ -416,3 +416,11 @@ EvalResult FunctionCallNode::evaluate(Program& program)
 	}
 	return function->callFunction(program, argValues);
 }
+
+EvalResult ReturnNode::evaluate(Program& program)
+{
+	if(this->expression == nullptr) {
+		Utils::throw_err("Error: Return statement missing expression.");
+	}
+	return this->expression->evaluate(program);
+}

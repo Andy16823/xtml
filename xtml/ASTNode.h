@@ -37,6 +37,14 @@ public:
 };
 
 /// <summary>
+/// Root Node
+/// </summary>
+class RootNode {
+public:
+	std::vector<std::unique_ptr<ASTNode>> nodes;
+};
+
+/// <summary>
 /// Statement Node
 /// </summary>
 class StmtNode : public ASTNode
@@ -107,6 +115,13 @@ public:
 	std::string functionName;
 	std::vector<std::unique_ptr<ExprNode>> arguments;
 	FunctionCallNode() = default;
+	EvalResult evaluate(Program& program) override;
+};
+
+class ReturnNode : public StmtNode {
+public:
+	std::unique_ptr<ExprNode> expression;
+	ReturnNode() = default;
 	EvalResult evaluate(Program& program) override;
 };
 

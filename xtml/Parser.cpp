@@ -146,6 +146,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseFunction();
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "return") {
+		return parseReturnStatement(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
@@ -430,6 +434,17 @@ std::unique_ptr<HtmlTextNode> Parser::parseHtmlTextNode(const Token& token)
 	// Set content and return
 	textNode->content = Utils::trim(content.str());
 	return textNode;
+}
+
+std::unique_ptr<ReturnNode> Parser::parseReturnStatement(const Token& token)
+{
+	get(); // Consume 'return' keyword
+	auto returnNode = std::make_unique<ReturnNode>();
+	returnNode->expression = parseExpression();
+	if(!match(TokenType::Symbol, ";")) {
+		Utils::throw_err("Error: Expected ';' after return statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	return returnNode;
 }
 
 std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)
