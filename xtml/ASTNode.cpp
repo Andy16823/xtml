@@ -49,7 +49,11 @@ EvalResult BlockNode::evaluate(Program& program)
 {
 	EvalResult result;
 	for (auto& child : children) {
-		result = merge_results(result, child->evaluate(program));
+		auto childResult = child->evaluate(program);
+		if (childResult.should_return) {
+			return childResult;
+		}
+		result = merge_results(result, childResult);
 	}
 	return result;
 }
@@ -159,15 +163,22 @@ EvalResult ContinueNode::evaluate(Program& program)
 
 EvalResult FunctionNode::evaluate(Program& program)
 {
-	EvalResult result;
-	// Evaluate body
-	result = merge_results(result, this->body->evaluate(program));
-	// Return result
+	auto result = this->body->evaluate(program);
+	result.should_return = false; // Reset return flag after function execution since we dont want to leave the outer context
 	return result;
 }
 
 EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::string>& argValues)
 {
+	if(argValues.size() != this->arguments.size()) {
+		Utils::throw_err("Error: Function " + this->name + " called with incorrect number of arguments.");
+	}
+
+	// Create a new program frame for the function call
+	Program frame = Program();
+	Core::mergeProgrammFunctions(program, frame);
+	frame.path = program.path;
+
 	// Bind arguments to local program variables
 	for (size_t i = 0; i < this->arguments.size(); i++) {
 		auto argExpr = dynamic_cast<VarExprNode*>(this->arguments[i].get());
@@ -177,13 +188,12 @@ EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::s
 		var value;
 		value.value = argValues[i];
 		value.type = Utils::predictVarType(value.value);
-		this->localProgram.vars[argExpr->name] = value;
+		frame.vars[argExpr->name] = value;
 	}
 
-	// Bind global functions to local program
-	Core::mergeProgrammFunctions(program, localProgram);
-
-	return this->body->evaluate(this->localProgram);
+	// Evaluate function body in local program context with evaluate from FunctionNode
+	auto result = this->evaluate(frame);
+	return result;
 }
 
 EvalResult BinaryExprNode::evaluate(Program& program)
@@ -423,7 +433,10 @@ EvalResult ReturnNode::evaluate(Program& program)
 	if(this->expression == nullptr) {
 		Utils::throw_err("Error: Return statement missing expression.");
 	}
-	return this->expression->evaluate(program);
+
+	auto result = this->expression->evaluate(program);
+	result.should_return = true;
+	return result;
 }
 
 EvalResult IncludeNode::evaluate(Program& program)

@@ -14,6 +14,7 @@ struct EvalResult {
 	std::string content; // The evaluated content TODO: rename to value?
 	bool should_break = false; // For loop control
 	bool should_continue = false; // For loop control
+	bool should_return = false; // For function return control
 	bool print_result = true;	// Whether the result should be printed to output
 };
 
@@ -90,7 +91,6 @@ public:
 class FunctionNode : public StmtNode {
 
 public:
-	Program localProgram;
 	std::string name;
 	std::vector<std::unique_ptr<ExprNode>> arguments;
 	std::unique_ptr<BlockNode> body;
