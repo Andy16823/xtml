@@ -6,6 +6,7 @@
 #include <memory>
 
 class FunctionNode;
+class RootNode;
 
 struct XtmlTag {
 	std::string full;
@@ -23,6 +24,7 @@ struct FunctionCall {
 struct Program {
 	std::map<std::string, var> vars;
 	std::map<std::string, FunctionCall> functions;
+	std::string path;
 };
 
 class Core
@@ -36,6 +38,7 @@ public:
 	static std::string build_file(const std::string& path, std::map<std::string, var>& vars);
 
 	static std::string buildFile(const std::string& path);
+	static std::unique_ptr<RootNode> buildRoot(const std::string& path, std::string& content);
 	static void write_file(const std::string& content, const std::string& output_path);
 	static std::vector<XtmlTag> find_xtml_tags(const std::string& content);
 	static std::map<std::string, std::string> parse_xtml_attributes(const std::string& tag);
@@ -45,5 +48,6 @@ public:
 	static std::string resolve_placeholders(const std::string& content, const std::map<std::string, var>& vars);
 	static std::vector<std::string> split_statements(const std::string& input);
 	static std::string extract_code_section(const std::string& input);
+	static void mergePrograms(const Program& source, Program& destination);
 };
 

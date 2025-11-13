@@ -7,6 +7,8 @@
 #include "Core.h"
 #include <iostream>
 #include <sstream>
+#include "Lexer.h"
+#include "Parser.h"
 
 using namespace std;
 
@@ -162,11 +164,6 @@ EvalResult FunctionNode::evaluate(Program& program)
 	result = merge_results(result, this->body->evaluate(program));
 	// Return result
 	return result;
-}
-
-void FunctionNode::inheritProgram(const Program& source)
-{
-	// TODO: Implement later
 }
 
 EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::string>& argValues)
@@ -372,23 +369,16 @@ EvalResult XtmlBlockNode::evaluate(Program& program)
 	EvalResult result;
 
 	// First move global vars to local scope
-	this->mergePrograms(program, localProgram);
+	Core::mergePrograms(program, localProgram);
 
 	// Evaluate body
 	result = merge_results(result, this->body->evaluate(this->localProgram));
 
 	// Merge back local vars to global scope
-	this->mergePrograms(this->localProgram, program);
+	Core::mergePrograms(this->localProgram, program);
 
 	// Return result
 	return result;
-}
-
-void XtmlBlockNode::mergePrograms(const Program& source, Program& destination)
-{
-	auto vars = Vars::merge_vars(source.vars, destination.vars);
-	destination.vars = vars;
-	destination.functions.insert(source.functions.begin(), source.functions.end());
 }
 
 EvalResult FunctionDeclNode::evaluate(Program& program)
@@ -423,4 +413,57 @@ EvalResult ReturnNode::evaluate(Program& program)
 		Utils::throw_err("Error: Return statement missing expression.");
 	}
 	return this->expression->evaluate(program);
+}
+
+EvalResult IncludeNode::evaluate(Program& program)
+{
+	// Create path to include file
+	std::string includeFullPath;
+	if(Utils::is_path_absolute(this->includePath)) {
+		includeFullPath = this->includePath;
+	}
+	else {
+		auto parentPath = Utils::file_path_parent(program.path);
+		includeFullPath = parentPath + "\\" + this->includePath;
+	}
+
+	// Read include file content
+	Program includeProgram;
+	includeProgram.path = includeFullPath;
+	auto content = Utils::read_file(includeFullPath);
+
+	// Build root for included content
+	auto root = Core::buildRoot(includeFullPath, content);
+	if (root == nullptr) {
+		Utils::throw_err("Error: Could not build include file: " + includeFullPath);
+	}
+
+	// Move included root and evaluate content
+	this->includedRoot = std::move(root);
+	content = this->includedRoot->evaluate().content;
+	content = Core::resolve_placeholders(content, this->includedRoot->program.vars);
+
+	// Merge included program vars and functions into current program
+	Core::mergePrograms(this->includedRoot->program, program);
+
+	// Return included content
+	EvalResult result;
+	result.content = content;
+	return result;
+}
+
+EvalResult RootNode::evaluate()
+{
+	EvalResult result;
+	Program& p = this->program;
+	for (auto& node : nodes) {
+		result = merge_results(result, node->evaluate(p));
+	}
+	return result;
+}
+
+EvalResult RootNode::evaluate(Program& program)
+{
+	Utils::throw_err("Error: RootNode evaluate with Program parameter is not supported. Use the parameterless evaluate() method instead.");
+	return {};
 }

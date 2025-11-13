@@ -30,6 +30,7 @@ static std::string generate_uuid();
 static DataType predictVarType(const std::string& value);
 
 
+
 // Parsers
 static std::string parse_parantheses(const std::string& str); // Parse content within the first matching parentheses
 };

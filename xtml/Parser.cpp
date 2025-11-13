@@ -150,6 +150,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseReturnStatement(t);
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "include") {
+		return parseIncludeStatement(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
@@ -445,6 +449,20 @@ std::unique_ptr<ReturnNode> Parser::parseReturnStatement(const Token& token)
 		Utils::throw_err("Error: Expected ';' after return statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return returnNode;
+}
+
+std::unique_ptr<IncludeNode> Parser::parseIncludeStatement(const Token& token)
+{
+	get(); // Consume 'include' keyword
+	auto includeNode = std::make_unique<IncludeNode>();
+	if(peek().type != TokenType::StringLiteral) {
+		Utils::throw_err("Error: Expected string literal for include path at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	includeNode->includePath = Utils::trim_quotes(get().value);
+	if (!match(TokenType::Symbol, ";")) {
+		Utils::throw_err("Error: Expected ';' after include statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	return includeNode;
 }
 
 std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)

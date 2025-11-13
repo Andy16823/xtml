@@ -39,9 +39,12 @@ public:
 /// <summary>
 /// Root Node
 /// </summary>
-class RootNode {
+class RootNode : public ASTNode {
 public:
+	Program program;
 	std::vector<std::unique_ptr<ASTNode>> nodes;
+	EvalResult evaluate();
+	EvalResult evaluate(Program& program) override;
 };
 
 /// <summary>
@@ -79,7 +82,6 @@ public:
 	std::unique_ptr<BlockNode> body;
 
 	EvalResult evaluate(Program& program) override;
-	void mergePrograms(const Program& source, Program& destination);
 };
 
 /// <summary>
@@ -93,7 +95,6 @@ public:
 	std::vector<std::unique_ptr<ExprNode>> arguments;
 	std::unique_ptr<BlockNode> body;
 	EvalResult evaluate(Program& program) override;
-	void inheritProgram(const Program& source);
 	EvalResult callFunction(Program& program, const std::vector<std::string>& argValues);
 };
 
@@ -348,5 +349,12 @@ class HtmlTextNode : public StmtNode {
 public:
 	HtmlTextNode() = default;
 	std::string content;
+	EvalResult evaluate(Program& program) override;
+};
+
+class IncludeNode : public StmtNode {
+public:
+	std::string includePath;
+	std::unique_ptr<RootNode> includedRoot;
 	EvalResult evaluate(Program& program) override;
 };

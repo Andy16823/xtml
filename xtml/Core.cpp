@@ -165,28 +165,53 @@ string Core::build_file(const string& path, map<string, var>& vars)
 
 std::string Core::buildFile(const std::string& path)
 {
+	// Read file content
 	auto content = Utils::read_file(path);
+
+	// Build root node and evaluate content
+	auto root = Core::buildRoot(path, content);
+
+	// Resolve the remaining placeholders in the content
+	content = Core::resolve_placeholders(content, root->program.vars);
+	Utils::print_ln("Build completed.");
+
+	// Return final content
+	return content;
+}
+
+std::unique_ptr<RootNode> Core::buildRoot(const std::string& path, std::string& content)
+{
+	// Find all <xtml> tags
 	auto blocks = Core::find_xtml_tags(content);
 
-	// Build global vars from self-closing tags
+	// Create the root node for this file
 	auto root = std::make_unique<RootNode>();
+	root->program.path = path;
 
-	Program program;
-
+	// Parse blocks and evaluate the content
 	for (const auto& block : blocks) {
 		if (!block.self_closing) {
+
+			// Create tokens from block content
 			Lexer lexer(block.content);
 			auto tokens = lexer.tokenize();
+
+			// Parse tokens into AST
 			Parser parser(tokens);
 			auto xmltBlock = parser.parse();
-			auto result = xmltBlock->evaluate(program);
+
+			// Evaluate the block and replace in content
+			auto result = xmltBlock->evaluate(root->program);
 			content = Utils::replace(content, block.full, result.content);
-			root->nodes.push_back(std::move(xmltBlock));	// Store the block to prevent dangling pointer for functions
+
+			// Add block to root nodes to prevent dangling pointer issues with program function ptrs
+			root->nodes.push_back(std::move(xmltBlock));
 		}
 	}
-	content = Core::resolve_placeholders(content, program.vars);
-	Utils::print_ln("Build completed.");
-	return content;
+
+	// Return the built root node
+	Utils::printerr_ln("Finished building root for file: " + path);
+	return root;
 }
 
 /// <summary>
@@ -474,4 +499,17 @@ std::string Core::extract_code_section(const std::string& input)
 	}
 
 	return result;
+}
+
+void Core::mergePrograms(const Program& source, Program& destination)
+{
+	// Merge variables
+	for (const auto& [key, value] : source.vars) {
+		destination.vars[key] = value;
+	}
+	// Merge functions
+	for (const auto& [key, funcCall] : source.functions) {
+		destination.functions[key] = funcCall;
+	}
+	destination.path = source.path;
 }

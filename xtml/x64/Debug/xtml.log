@@ -1,4 +1,2 @@
-﻿  Parser.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(158,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(414,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
+﻿  ASTNode.cpp
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe

@@ -50,7 +50,7 @@ private:
 	std::unordered_set<std::string> keywords = {
 		"var",
 		"return",
-		"import",
+		"include",
 		"for",
 		"if",
 		"else",
