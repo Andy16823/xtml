@@ -447,6 +447,10 @@ var Vars::eval_array_expr(const std::string& token, const std::map<std::string, 
 var Vars::binaryOperation(const var& left, const var& right, const std::string& op)
 {
 	if(left.type != right.type) {
+		// Allow string concatenation with mixed types by converting non-string to string
+		if ((left.type == DT_STRING || right.type == DT_STRING)) {
+			return stringOperation(left, right, op);
+		}
 		Utils::throw_err("Error: Type mismatch in binary operation.");
 	}
 	if(left.type == DT_STRING) {
@@ -464,9 +468,7 @@ var Vars::binaryOperation(const var& left, const var& right, const std::string& 
 
 var Vars::stringOperation(const var& left, const var& right, const std::string& op)
 {
-	if(left.type != DT_STRING || right.type != DT_STRING) {
-		Utils::throw_err("Error: String operation on non-string types.");
-	}
+	// Allow allways string concatenation by converting non-string to string
 	if(op == "+") {
 		return var{ left.value + right.value, DT_STRING };
 	} 

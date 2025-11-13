@@ -407,7 +407,7 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 			break;
 		}
 		// Second exit condition self-closing tag
-		if (match(TokenType::Symbol, "/>")) {
+		if (match(TokenType::Operator, "/>")) {
 			htmlStmt->selfClosing = true;
 			break;
 		}
