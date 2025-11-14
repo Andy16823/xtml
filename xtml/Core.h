@@ -8,6 +8,9 @@
 class FunctionNode;
 class RootNode;
 
+/// <summary>
+/// Xtml Tag Structure
+/// </summary>
 struct XtmlTag {
 	std::string full;
 	std::string head;
@@ -16,11 +19,17 @@ struct XtmlTag {
 	std::map<std::string, std::string> attributes;
 };
 
+/// <summary>
+/// Function Call Structure
+/// </summary>
 struct FunctionCall {
 	std::string name;
 	FunctionNode* function = nullptr;
 };
 
+/// <summary>
+/// Program Structure
+/// </summary>
 struct Program {
 	std::map<std::string, var> vars;
 	std::map<std::string, FunctionCall> functions;
@@ -30,27 +39,77 @@ struct Program {
 class Core
 {
 public:
-	static std::vector<std::string> parse_blocks(const std::string& content, const std::string& start_tag, const std::string& end_tag);
-	static std::map<std::string, var> parse_block(const std::string& content, std::map<std::string, var>& vars);
-	static std::string remove_blocks(const std::string& content, const std::string& start_tag, const std::string& end_tag);
-	static std::string clean_content(std::string& content);	
-
+	/// <summary>
+	/// Build an XTML file and return the resulting HTML content
+	/// </summary>
+	/// <param name="path"></param>
+	/// <returns></returns>
 	static std::string buildFile(const std::string& path);
+
+	/// <summary>
+	/// Build the root node for an XTML file and populate the content with evaluated HTML
+	/// </summary>
+	/// <param name="path"></param>
+	/// <param name="content"></param>
+	/// <returns></returns>
 	static std::unique_ptr<RootNode> buildRoot(const std::string& path, std::string& content);
 
+	/// <summary>
+	/// Find all <xtml> tags in the content. Includes both self-closing and block tags.
+	/// </summary>
+	/// <param name="content"></param>
+	/// <returns></returns>
+	static std::vector<XtmlTag> findXtmlTags(const std::string& content);
+
+	/// <summary>
+	/// Find all tags of a specific type in the content. Includes both self-closing and block tags.
+	/// </summary>
+	/// <param name="content"></param>
+	/// <param name="tag"></param>
+	/// <returns></returns>
 	static std::vector<XtmlTag> findTags(const std::string& content, const std::string& tag);
+
+	/// <summary>
+	/// Read definition blocks from the content and populate the vars map
+	/// </summary>
+	/// <param name="content"></param>
+	/// <param name="vars"></param>
 	static void readDefinitionBlocks(std::string& content, std::map<std::string, var>& vars);
 
-	static void write_file(const std::string& content, const std::string& output_path);
-	static std::vector<XtmlTag> find_xtml_tags(const std::string& content);
-	static std::map<std::string, std::string> parse_xtml_attributes(const std::string& tag);
-	static std::map<std::string, var> params_to_vars(const std::map<std::string, std::string>& params);
-	static std::vector<std::string> find_unresolved_vars(const std::string& content);
-	static std::tuple<std::string, var> resolve_self_closing_var(XtmlTag tag);
-	static std::string resolve_placeholders(const std::string& content, const std::map<std::string, var>& vars);
-	static std::vector<std::string> split_statements(const std::string& input);
-	static std::string extract_code_section(const std::string& input);
+	/// <summary>
+	/// Write content to a file
+	/// </summary>
+	/// <param name="content"></param>
+	/// <param name="output_path"></param>
+	static void writeFile(const std::string& content, const std::string& output_path);
+
+	/// <summary>
+	/// Parse attributes from an XHTML tag string
+	/// </summary>
+	/// <param name="tag"></param>
+	/// <returns></returns>
+	static std::map<std::string, std::string> parseXtmlAttributes(const std::string& tag);
+
+	/// <summary>
+	/// Resolve placeholders in the content using the provided vars map
+	/// </summary>
+	/// <param name="content"></param>
+	/// <param name="vars"></param>
+	/// <returns></returns>
+	static std::string resolvePlaceholders(const std::string& content, const std::map<std::string, var>& vars);
+
+	/// <summary>
+	/// Merge source program vars and functions into destination program
+	/// </summary>
+	/// <param name="source"></param>
+	/// <param name="destination"></param>
 	static void mergePrograms(const Program& source, Program& destination);
+
+	/// <summary>
+	/// Merge source program functions into destination program
+	/// </summary>
+	/// <param name="source"></param>
+	/// <param name="destination"></param>
 	static void mergeProgrammFunctions(const Program& source, Program& destination);
 };
 

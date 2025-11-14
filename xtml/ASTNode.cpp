@@ -565,7 +565,7 @@ EvalResult IncludeNode::evaluate(Program& program)
 
 	// Move included root and evaluate content
 	this->includedRoot = std::move(root);
-	content = Core::resolve_placeholders(content, this->includedRoot->program.vars);
+	content = Core::resolvePlaceholders(content, this->includedRoot->program.vars);
 
 	// Merge included program vars and functions into current program
 	Core::mergePrograms(this->includedRoot->program, program);
@@ -600,7 +600,7 @@ EvalResult HtmlBlockNode::evaluate(Program& program)
 	for(auto& child : children) {
 		result = merge_results(result, child->evaluate(program), true); // True to merge content
 	}
-	result.value = Core::resolve_placeholders(result.value, program.vars); // Resolve any remaining placeholders
+	result.value = Core::resolvePlaceholders(result.value, program.vars); // Resolve any remaining placeholders
 	result.output = result.value;	// For HTML blocks, printed output is the same as content
 	return result;
 }

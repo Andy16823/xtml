@@ -11,102 +11,6 @@
 
 using namespace std;
 
-/// <summary>
-/// Parse content into blocks based on start and end tags
-/// </summary>
-/// <param name="content"></param>
-/// <param name="start_tag"></param>
-/// <param name="end_tag"></param>
-/// <returns></returns>
-vector<string> Core::parse_blocks(const string& content, const string& start_tag, const string& end_tag)
-{
-	// Parse content into blocks based on start and end tags
-	vector<string> blocks;
-	string pattern = start_tag + "([\\s\\S]*?)" + end_tag;
-	regex re(pattern);
-
-	auto beginn = sregex_iterator(content.begin(), content.end(), re);
-	auto endd = sregex_iterator();
-
-	for (auto i = beginn; i != endd; ++i) {
-		blocks.push_back(i->str(1)); // Capture group 1
-	}
-	
-	return blocks;
-}
-
-/// <summary>
-/// Parse a single block for variable declarations
-/// </summary>
-/// <param name="content"></param>
-/// <returns></returns>
-map<string, var> Core::parse_block(const std::string& content, map<string, var>& vars)
-{
-	map<string, var> local_vars;
-	local_vars.insert(vars.begin(), vars.end());
-
-	// split parts on ;
-	auto segments = Utils::split(content, ';');
-	// Parse each line for @var declarations
-	for (auto& line : segments) {	
-
- 		line = Utils::trim(line);
-		if (line.empty()) continue;
-		line = Vars::trim_var(line);
-
-		if (line.starts_with("@include")) {
-			// Handle includes
-		}
-
-		std::tuple<std::string, std::string> parsedVar = Vars::parse_var(line);
-		std::string key = std::get<0>(parsedVar);
-		std::string value = std::get<1>(parsedVar);
-		var varval = Vars::eval_expr(value, local_vars);
-
-		if (!key.empty() && varval.type != DT_UNKNOWN) {
-			local_vars[key] = varval;
-		}
-	}
-	return local_vars;
-}
-
-/// <summary>
-/// Remove blocks from content based on start and end tags
-/// </summary>
-/// <param name="content"></param>
-/// <param name="start_tag"></param>
-/// <param name="end_tag"></param>
-/// <returns></returns>
-string Core::remove_blocks(const string& content, const string& start_tag, const string& end_tag)
-{
-	// Remove blocks from content based on start and end tags
-	string pattern = start_tag + "[\\s\\S]*?" + end_tag;
-	regex re(pattern);
-	auto result = regex_replace(content, re, "");
-	return result;
-}
-
-/// <summary>
-/// Clean content by removing comments and trimming whitespace
-/// </summary>
-/// <param name="content"></param>
-/// <returns></returns>
-string Core::clean_content(string& content)
-{
-	// Remove comments and trim whitespace
-	std::istringstream stream(content);
-	std::string line;
-	std::string cleaned;
-	while (std::getline(stream, line)) {
-		line = Utils::trim(line);
-		if (line.starts_with("@var")) {
-			continue;
-		}
-		cleaned += line + "\n";
-	}
-	return cleaned;
-}
-
 std::string Core::buildFile(const std::string& path)
 {
 	// Read file content
@@ -116,7 +20,7 @@ std::string Core::buildFile(const std::string& path)
 	auto root = Core::buildRoot(path, content);
 
 	// Resolve the remaining placeholders in the content
-	content = Core::resolve_placeholders(content, root->program.vars);
+	content = Core::resolvePlaceholders(content, root->program.vars);
 	Utils::print_ln("Build completed.");
 
 	// Return final content
@@ -126,7 +30,7 @@ std::string Core::buildFile(const std::string& path)
 std::unique_ptr<RootNode> Core::buildRoot(const std::string& path, std::string& content)
 {
 	// Find all <xtml> tags
-	auto blocks = Core::find_xtml_tags(content);
+	auto blocks = Core::findXtmlTags(content);
 
 	// Create the root node for this file
 	auto root = std::make_unique<RootNode>();
@@ -189,7 +93,7 @@ std::vector<XtmlTag> Core::findTags(const std::string& content, const std::strin
 			tag.self_closing = false;
 		}
 
-		tag.attributes = Core::parse_xtml_attributes(tag.head);
+		tag.attributes = Core::parseXtmlAttributes(tag.head);
 		tags.push_back(std::move(tag));
 	}
 
@@ -228,7 +132,7 @@ void Core::readDefinitionBlocks(std::string& content, std::map<std::string, var>
 /// </summary>
 /// <param name="content"></param>
 /// <param name="output_path"></param>
-void Core::write_file(const string& content, const string& output_path)
+void Core::writeFile(const string& content, const string& output_path)
 {
 	std::ofstream file(output_path);
 	if (!file.is_open()) {
@@ -243,7 +147,7 @@ void Core::write_file(const string& content, const string& output_path)
 /// </summary>
 /// <param name="content"></param>
 /// <returns></returns>
-vector<XtmlTag> Core::find_xtml_tags(const string& content) {
+vector<XtmlTag> Core::findXtmlTags(const string& content) {
 	vector<XtmlTag> tags;
 
 	// Kombinierte Regex:
@@ -274,7 +178,7 @@ vector<XtmlTag> Core::find_xtml_tags(const string& content) {
 			tag.self_closing = false;
 		}
 
-		tag.attributes = Core::parse_xtml_attributes(tag.head);
+		tag.attributes = Core::parseXtmlAttributes(tag.head);
 		tags.push_back(std::move(tag));
 	}
 
@@ -286,7 +190,7 @@ vector<XtmlTag> Core::find_xtml_tags(const string& content) {
 /// </summary>
 /// <param name="tag"></param>
 /// <returns></returns>
-map<string, string> Core::parse_xtml_attributes(const string& tag)
+map<string, string> Core::parseXtmlAttributes(const string& tag)
 {
 	map<string, string> attributes;
 	// Example tag: <tag attr1="value1" attr2='value2'>
@@ -303,90 +207,8 @@ map<string, string> Core::parse_xtml_attributes(const string& tag)
 	return attributes;
 }
 
-/// <summary>
-/// Map parameters (string) to vars (var)
-/// </summary>
-/// <param name="params"></param>
-/// <returns></returns>
-map<string, var> Core::params_to_vars(const map<string, string>& params)
-{
-	// Convert string parameters to var types
-	map<string, var> vars;
-	for (const auto& [key, value] : params) {
-		if (Utils::starts_with(key, "param-")) {
-			auto new_key = key.substr(6);
-            vars[new_key] = var{ value, DT_STRING };
-			continue;
-		}
-	}
-	return vars;
-}
 
-/// <summary>
-/// Find unresolved variables in the content
-/// </summary>
-/// <param name="content"></param>
-/// <returns></returns>
-vector<string> Core::find_unresolved_vars(const string& content)
-{
-	vector<string> unresolved;
-	std::regex re(R"(\{\{@([a-zA-Z0-9_]+)\}\})");
-	for (auto it = std::sregex_iterator(content.begin(), content.end(), re); it != std::sregex_iterator(); ++it) {
-		unresolved.push_back(it->str(1));
-	}
-	return unresolved;
-}
-
-/// <summary>
-/// Resolve a self-closing <xtml> tag that defines a variable
-/// e.g. <xtml define="varName" value="varValue" type="string" />
-/// types: string (default), number
-/// </summary>
-/// <param name="tag"></param>
-/// <returns></returns>
-tuple<string, var> Core::resolve_self_closing_var(XtmlTag tag)
-{
-	auto var_key = tag.attributes.contains("define") ? Utils::trim(tag.attributes.at("define")) : "";
-	if (var_key.empty()) {
-		Utils::printerr_ln("Error: Variable key is empty.");
-		Utils::printerr_ln("Stack trace:");
-		Utils::printerr_ln(tag.full);
-		throw std::runtime_error("Variable key is empty.");
-	}
-
-	auto var_value = tag.attributes.contains("value") ? Utils::trim(tag.attributes.at("value")) : "";
-	auto var_type = tag.attributes.contains("type") ? Utils::trim(tag.attributes.at("type")) : "string";
-
-	if (var_value.empty()) {
-		Utils::printerr_ln("Error: Variable value is empty for variable: " + var_key);
-		Utils::printerr_ln("Stack trace:");
-		Utils::printerr_ln(tag.full);
-		throw std::runtime_error("Variable value is empty.");
-	}
-
-	if (var_type == "string") {
-		return tuple(var_key, var{ var_value, DT_STRING });
-	}
-	else if (var_type == "number") {
-		if (Utils::is_number(var_value)) {
-			return tuple(var_key, var{ var_value, DT_NUMBER });
-		}
-		else {
-			Utils::printerr_ln("Error: Invalid number value for variable: " + var_key);
-			Utils::printerr_ln("Stack trace:");
-			Utils::printerr_ln(tag.full);
-			throw std::runtime_error("Invalid number value.");
-		}
-	}
-	else {
-		Utils::printerr_ln("Error: Unknown variable type: " + var_type + " for variable: " + var_key);
-		Utils::printerr_ln("Stack trace:");
-		Utils::printerr_ln(tag.full);
-		throw std::runtime_error("Unknown variable type.");
-	}
-}
-
-std::string Core::resolve_placeholders(const std::string& content, const std::map<std::string, var>& vars)
+std::string Core::resolvePlaceholders(const std::string& content, const std::map<std::string, var>& vars)
 {
 	// Resolving playeholders like {{@varName}} or {{namespace::funcName(arg1, arg2)}}
 
@@ -419,92 +241,6 @@ std::string Core::resolve_placeholders(const std::string& content, const std::ma
 
 	for (const auto& [placeholder, var_val] : results) {
 		result = Utils::replace(result, placeholder, var_val.value);
-	}
-
-	return result;
-}
-
-std::vector<std::string> Core::split_statements(const std::string& input)
-{
-	vector<string> result;
-	string current;
-	int brace_level = 0;
-	int paren_level = 0;
-
-	char quote_char = '\0';
-	bool in_quotes = false;
-
-	for (size_t i = 0; i < input.length(); ++i) {
-		char c = input[i];
-		current.push_back(c);
-
-		if ((c == '"' || c == '\'') && (quote_char == '\0' || quote_char == c)) {
-			quote_char = (quote_char == '\0') ? c : '\0';
-		}
-
-		if (quote_char != '\0') continue;
-
-		if (c == '(') {
-			paren_level++;
-		}
-		else if (c == ')') {
-			paren_level--;
-		}
-
-		if (c == '{') {
-			brace_level++;
-		}
-		else if (c == '}') {
-			brace_level--;
-			if (brace_level == 0 && paren_level == 0) {
-				result.push_back(Utils::trim(current));
-				current.clear();
-			}
-		}
-		else if (c == ';' && brace_level == 0 && paren_level == 0) {
-			result.push_back(Utils::trim(current));
-			current.clear();
-		}
-	}
-
-	if (!current.empty()) {
-		result.push_back(Utils::trim(current));
-	}
-
-	return result;
-}
-
-/// <summary>
-/// Extract code section within the first level of braces
-/// </summary>
-/// <param name="input"></param>
-/// <returns></returns>
-std::string Core::extract_code_section(const std::string& input)
-{
-	string result;
-	int brace_level = 0;
-	bool in_quote = false;
-
-	for (size_t i = 0; i < input.length(); ++i) {
-		char c = input[i];
-
-		if (c == '"' || c == '\'') {
-			in_quote = !in_quote;
-		}
-
-		if (!in_quote) {
-			if (c == '{') {
-				brace_level++;
-				if (brace_level == 1) continue; // Skip the opening brace
-			}
-			else if (c == '}') {
-				brace_level--;
-				if (brace_level == 0) break; // Stop at the closing brace
-			}
-		}
-		if (brace_level > 0) {
-			result.push_back(c);
-		}
 	}
 
 	return result;

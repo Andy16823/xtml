@@ -77,7 +77,7 @@ void action_build(const std::string& file_path) {
 	std::map<std::string, var> vars;
 	//auto content = Core::build_file(path, vars);
 	auto content = Core::buildFile(path); // New AST-based builder (not finished yet)
-	Core::write_file(content, output_path);
+	Core::writeFile(content, output_path);
 }
 
 int main(int argc, char* argv[])  
