@@ -40,6 +40,7 @@ public:
 	std::unique_ptr<IncludeNode> parseIncludeStatement(const Token& token); // Parse include statements
 	std::unique_ptr<BreakNode> parseBreakStatement(const Token& token); // Parse break statements
 	std::unique_ptr<ContinueNode> parseContinueStatement(const Token& token); // Parse continue statements
+	std::unique_ptr<PrintNode> parsePrintStatement(const Token& token); // Parse print statements
 
 	// Loops
 	std::unique_ptr<ForNode> parseForStatement(const Token& token); // Parse for loops

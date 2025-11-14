@@ -166,6 +166,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseContinueStatement(t);
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "print") {
+		return parsePrintStatement(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
@@ -278,6 +282,16 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 			Utils::throw_err("Error: Expected ')' after expression at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 		return expr;
+	}
+
+	if (t.type == TokenType::Keyword && t.value == "expr") {
+		auto stmtExpr = std::make_unique<StmtExprNode>();
+		auto stmt = parseStatement();
+		if (stmt == nullptr) {
+			Utils::throw_err("Error: Expected statement after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+		}
+		stmtExpr->statement = std::move(stmt);
+		return stmtExpr;
 	}
 
 	throw std::runtime_error("Error: Unexpected token '" + t.value + "' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column));
@@ -548,6 +562,23 @@ std::unique_ptr<ContinueNode> Parser::parseContinueStatement(const Token& token)
 		Utils::throw_err("Error: Expected ';' after continue statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return continueNode;
+}
+
+std::unique_ptr<PrintNode> Parser::parsePrintStatement(const Token& token)
+{
+	get(); // Consume 'print' keyword
+	if (!match(TokenType::Symbol, "(")) {
+		Utils::throw_err("Error: Expected '(' after 'print' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	auto printNode = std::make_unique<PrintNode>();
+	printNode->expression = parseExpression();
+	if (!match(TokenType::Symbol, ")")) {
+		Utils::throw_err("Error: Expected ')' after print expression at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	if (!match(TokenType::Symbol, ";")) {
+		Utils::throw_err("Error: Expected ';' after print statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	return printNode;
 }
 
 std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)

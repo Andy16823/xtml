@@ -15,7 +15,7 @@ struct EvalResult {
 	bool should_break = false; // For loop control
 	bool should_continue = false; // For loop control
 	bool should_return = false; // For function return control
-	bool print_result = true;	// Whether the result should be printed to output
+	std::string printed_output; // Captured printed output
 };
 
 
@@ -25,7 +25,7 @@ struct EvalResult {
 class ASTNode
 {
 protected:
-	virtual EvalResult merge_results(const EvalResult& a, const EvalResult& b);
+	virtual EvalResult merge_results(const EvalResult& a, const EvalResult& b, bool mergeContent = false);
 
 public:
 	std::vector<std::unique_ptr<ASTNode>> children;
@@ -363,5 +363,19 @@ class IncludeNode : public StmtNode {
 public:
 	std::string includePath;
 	std::unique_ptr<RootNode> includedRoot;
+	EvalResult evaluate(Program& program) override;
+};
+
+class PrintNode : public StmtNode {
+public:
+	std::unique_ptr<ExprNode> expression;
+	PrintNode() = default;
+	EvalResult evaluate(Program& program) override;
+};
+
+class StmtExprNode : public ExprNode {
+public:
+	std::unique_ptr<StmtNode> statement;
+	StmtExprNode() = default;
 	EvalResult evaluate(Program& program) override;
 };

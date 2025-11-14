@@ -12,10 +12,13 @@
 
 using namespace std;
 
-EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b)
+EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b, bool mergeContent)
 {
 	EvalResult result;
-	result.content = a.content + b.content;
+	if (mergeContent) {
+		result.content = a.content + b.content;
+	}
+	result.printed_output = a.printed_output + b.printed_output;
 
 	if (a.should_break || b.should_break) {
 		result.should_break = true;
@@ -266,9 +269,7 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 		Utils::throw_err("Error: Unknown binary operation: " + op);
 	}
 
-	// Check for assignment operation
 	if (optype == BinaryOpType::Assignment) {
-		// Assignment operation must be an var on the left side
 		auto leftVar = dynamic_cast<VarExprNode*>(left.get());
 		if (leftVar == nullptr) {
 			Utils::throw_err("Error: Left side of assignment must be a variable.");
@@ -278,7 +279,8 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 			Utils::throw_err("Error: Undefined variable: " + leftVar->name);
 		}
 		program.vars[leftVar->name].value = rightResult.content;
-		return rightResult; // Return the assigned value
+		rightResult.printed_output = ""; // No output for assignment
+		return rightResult; 
 	}
 
 	// Logic operation
@@ -550,7 +552,7 @@ EvalResult IncludeNode::evaluate(Program& program)
 	includeProgram.path = includeFullPath;
 	auto content = Utils::read_file(includeFullPath);
 
-	// Build root for included content
+	// Build root for included content and replace block in content
 	auto root = Core::buildRoot(includeFullPath, content);
 	if (root == nullptr) {
 		Utils::throw_err("Error: Could not build include file: " + includeFullPath);
@@ -558,7 +560,6 @@ EvalResult IncludeNode::evaluate(Program& program)
 
 	// Move included root and evaluate content
 	this->includedRoot = std::move(root);
-	content = this->includedRoot->evaluate().content;
 	content = Core::resolve_placeholders(content, this->includedRoot->program.vars);
 
 	// Merge included program vars and functions into current program
@@ -592,9 +593,22 @@ EvalResult HtmlBlockNode::evaluate(Program& program)
 
 	// Evaluate children
 	for(auto& child : children) {
-		result = merge_results(result, child->evaluate(program));
+		result = merge_results(result, child->evaluate(program), true); // True to merge content
 	}
-	// Resolve all placeholders within the html block
-	result.content = Core::resolve_placeholders(result.content, program.vars); 
+	result.content = Core::resolve_placeholders(result.content, program.vars); // Resolve any remaining placeholders
+	result.printed_output = result.content;	// For HTML blocks, printed output is the same as content
 	return result;
+}
+
+EvalResult PrintNode::evaluate(Program& program)
+{
+	EvalResult result;
+	auto exprResult = expression->evaluate(program);
+	result.printed_output = exprResult.content;
+	return result;
+}
+
+EvalResult StmtExprNode::evaluate(Program& program)
+{
+	return statement->evaluate(program);
 }

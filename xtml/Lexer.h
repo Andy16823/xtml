@@ -59,7 +59,8 @@ private:
 		"break",
 		"print",
 		"html",
-		"function"
+		"function",
+		"expr"
 	};
 
 	std::unordered_set<std::string> operators = {

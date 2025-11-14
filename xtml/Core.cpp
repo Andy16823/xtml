@@ -202,7 +202,7 @@ std::unique_ptr<RootNode> Core::buildRoot(const std::string& path, std::string& 
 
 			// Evaluate the block and replace in content
 			auto result = xmltBlock->evaluate(root->program);
-			content = Utils::replace(content, block.full, result.content);
+			content = Utils::replace(content, block.full, result.printed_output);
 
 			// Add block to root nodes to prevent dangling pointer issues with program function ptrs
 			root->nodes.push_back(std::move(xmltBlock));
