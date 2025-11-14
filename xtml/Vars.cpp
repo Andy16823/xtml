@@ -38,7 +38,7 @@ var Vars::evalFuncExpr(vector<string>& tokens, const map<string, var>& vars)
 {
 	// e.g. std::toUpper("hello")
 	if (tokens.size() != 1) {
-		Utils::throw_err("Error: Invalid function expression." );
+		Utils::throwErr("Error: Invalid function expression." );
 	}
 	auto expr = Utils::trim(tokens[0]);
 	auto [namespaceName, functionName, args] = FunctionRegistry::ParseFunctionCall(expr);
@@ -48,7 +48,7 @@ var Vars::evalFuncExpr(vector<string>& tokens, const map<string, var>& vars)
 	for (auto& arg : args) {
 		auto evaledArg = evalExpr(arg, vars);
 		if (evaledArg.type == DT_UNKNOWN) {
-			Utils::throw_err("Error: Failed to evaluate function argument: " + arg);
+			Utils::throwErr("Error: Failed to evaluate function argument: " + arg);
 		}
 		funcArgs.push_back(evaledArg);
 	}
@@ -58,7 +58,7 @@ var Vars::evalFuncExpr(vector<string>& tokens, const map<string, var>& vars)
 		return g_functionRegistry.CallFunction(namespaceName, functionName, funcArgs);
 	}
 	else {
-		Utils::throw_err("Error: Function not found: " + namespaceName + "::" + functionName);
+		Utils::throwErr("Error: Function not found: " + namespaceName + "::" + functionName);
 	}
 }
 
@@ -80,7 +80,7 @@ var Vars::evalFuncExpr(const string& token, const map<string, var>& vars)
 	for (auto& arg : args) {
 		auto evaledArg = evalExpr(arg, vars);
 		if (evaledArg.type == DT_UNKNOWN) {
-			Utils::throw_err("Error: Failed to evaluate function argument: " + arg);
+			Utils::throwErr("Error: Failed to evaluate function argument: " + arg);
 		}
 		funcArgs.push_back(evaledArg);
 	}
@@ -90,7 +90,7 @@ var Vars::evalFuncExpr(const string& token, const map<string, var>& vars)
 		return g_functionRegistry.CallFunction(namespaceName, functionName, funcArgs);
 	}
 	else {
-		Utils::throw_err("Error: Function not found: " + namespaceName + "::" + functionName);
+		Utils::throwErr("Error: Function not found: " + namespaceName + "::" + functionName);
 	}
 }
 
@@ -101,7 +101,7 @@ var Vars::binaryOperation(const var& left, const var& right, const std::string& 
 		if ((left.type == DT_STRING || right.type == DT_STRING)) {
 			return stringOperation(left, right, op);
 		}
-		Utils::throw_err("Error: Type mismatch in binary operation.");
+		Utils::throwErr("Error: Type mismatch in binary operation.");
 	}
 	if(left.type == DT_STRING) {
 		return stringOperation(left, right, op);
@@ -113,7 +113,7 @@ var Vars::binaryOperation(const var& left, const var& right, const std::string& 
 		return booleanOperation(left, right, op);
 	}
 
-	Utils::throw_err("Error: Unsupported type in binary operation.");
+	Utils::throwErr("Error: Unsupported type in binary operation.");
 }
 
 var Vars::stringOperation(const var& left, const var& right, const std::string& op)
@@ -123,13 +123,13 @@ var Vars::stringOperation(const var& left, const var& right, const std::string& 
 		return var{ left.value + right.value, DT_STRING };
 	} 
 
-	Utils::throw_err("Error: Unknown string operation: " + op);
+	Utils::throwErr("Error: Unknown string operation: " + op);
 }
 
 var Vars::numericOperation(const var& left, const var& right, const std::string& op)
 {
 	if (left.type != DT_NUMBER || right.type != DT_NUMBER) {
-		Utils::throw_err("Error: Numeric operation on non-number types.");
+		Utils::throwErr("Error: Numeric operation on non-number types.");
 	}
 	int64_t leftNum = std::stoll(left.value);
 	int64_t rightNum = std::stoll(right.value);
@@ -147,14 +147,14 @@ var Vars::numericOperation(const var& left, const var& right, const std::string&
 	if (op == "/")
 	{
 		if (rightNum == 0) {
-			Utils::throw_err("Error: Division by zero.");
+			Utils::throwErr("Error: Division by zero.");
 		}
 		return var{ std::to_string(leftNum / rightNum), DT_NUMBER };
 	}
 	if (op == "%")
 	{
 		if (rightNum == 0) {
-			Utils::throw_err("Error: Modulo by zero.");
+			Utils::throwErr("Error: Modulo by zero.");
 		}
 		return var{ std::to_string(leftNum % rightNum), DT_NUMBER };
 	}
@@ -169,18 +169,18 @@ var Vars::numericOperation(const var& left, const var& right, const std::string&
 	if(op == "//")
 	{
 		if (rightNum == 0) {
-			Utils::throw_err("Error: Floor division by zero.");
+			Utils::throwErr("Error: Floor division by zero.");
 		}
 		return var{ std::to_string(leftNum / rightNum), DT_NUMBER };
 	}
 
-	Utils::throw_err("Error: Unknown numeric operation: " + op);
+	Utils::throwErr("Error: Unknown numeric operation: " + op);
 }
 
 var Vars::booleanOperation(const var& left, const var& right, const std::string& op)
 {
 	if (left.type != DT_BOOL || right.type != DT_BOOL) {
-		Utils::throw_err("Error: Boolean operation on non-boolean types.");
+		Utils::throwErr("Error: Boolean operation on non-boolean types.");
 	}
 
 	bool leftBool = (left.value == "true" || left.value == "1");
@@ -192,13 +192,13 @@ var Vars::booleanOperation(const var& left, const var& right, const std::string&
 	if (op == "||") {
 		return var{ (leftBool || rightBool) ? "true" : "false", DT_BOOL };
 	}
-	Utils::throw_err("Error: Unknown boolean operation: " + op);
+	Utils::throwErr("Error: Unknown boolean operation: " + op);
 }
 
 bool Vars::compareOperation(const var& left, const var& right, const std::string& op)
 {
 	if(left.type != right.type) {
-		Utils::throw_err("Error: Type mismatch in comparison operation.");
+		Utils::throwErr("Error: Type mismatch in comparison operation.");
 	}
 	if(left.type == DT_STRING) {
 		return compareStrings(left.value, right.value, op);
@@ -211,7 +211,7 @@ bool Vars::compareOperation(const var& left, const var& right, const std::string
 		bool rightBool = (right.value == "true" || right.value == "1");
 		return compareBooleans(leftBool, rightBool, op);
 	}
-	Utils::throw_err("Error: Unsupported type in comparison operation.");
+	Utils::throwErr("Error: Unsupported type in comparison operation.");
 }
 
 bool Vars::compareStrings(const std::string& left, const std::string& right, const std::string& op)
@@ -234,7 +234,7 @@ bool Vars::compareStrings(const std::string& left, const std::string& right, con
 	else if (op == ">=") {
 		return left >= right;
 	}
-	Utils::throw_err("Error: Unknown comparison operation: " + op);
+	Utils::throwErr("Error: Unknown comparison operation: " + op);
 }
 
 bool Vars::compareNumbers(int64_t left, int64_t right, const std::string& op)
@@ -257,7 +257,7 @@ bool Vars::compareNumbers(int64_t left, int64_t right, const std::string& op)
 	else if (op == ">=") {
 		return left >= right;
 	}
-	Utils::throw_err("Error: Unknown comparison operation: " + op);
+	Utils::throwErr("Error: Unknown comparison operation: " + op);
 }
 
 bool Vars::compareBooleans(bool left, bool right, const std::string& op)
@@ -268,7 +268,7 @@ bool Vars::compareBooleans(bool left, bool right, const std::string& op)
 	else if (op == "!=") {
 		return left != right;
 	}
-	Utils::throw_err("Error: Unknown comparison operation: " + op);
+	Utils::throwErr("Error: Unknown comparison operation: " + op);
 }
 
 var Vars::unaryOperation(const var& operand, const std::string& op)
@@ -287,10 +287,10 @@ var Vars::unaryOperation(const var& operand, const std::string& op)
 		if(op == "+") {
 			return var{ std::to_string(+num), DT_NUMBER };
 		}
-		Utils::throw_err("Error: Unknown unary operation: " + op);
+		Utils::throwErr("Error: Unknown unary operation: " + op);
 	}	
 	
-	Utils::throw_err("Error: Unary operation on unsupported type.");
+	Utils::throwErr("Error: Unary operation on unsupported type.");
 }
 
 BinaryOpType Vars::getBinaryOpType(const std::string& op)

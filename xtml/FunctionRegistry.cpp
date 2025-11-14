@@ -31,12 +31,12 @@ var FunctionRegistry::CallFunction(const std::string& namespaceName, const std::
 				return func.callback(args);
 			}
 			else {
-				Utils::printerr_ln("Error: Function " + namespaceName + "::" + functionName + " called with invalid number of arguments.");
+				Utils::printerrLn("Error: Function " + namespaceName + "::" + functionName + " called with invalid number of arguments.");
 				return var();
 			}
 		}
 		else {
-			Utils::printerr_ln("Error: Function " + namespaceName + "::" + functionName + " not found.");
+			Utils::printerrLn("Error: Function " + namespaceName + "::" + functionName + " not found.");
 			return var();
 		}
 	}
@@ -61,13 +61,13 @@ tuple<std::string, std::string, vector<string>> FunctionRegistry::ParseFunctionC
 	// Parse a function call expression e.g. namespace::funcName(arg1, arg2)
 	auto nsFuncSplit = expr.find("::");
 	if (nsFuncSplit == std::string::npos) {
-		Utils::throw_err("Error: Invalid function call expression: " + expr);
+		Utils::throwErr("Error: Invalid function call expression: " + expr);
 	}
 	auto namespaceName = Utils::trim(expr.substr(0, nsFuncSplit));
 	auto rest = Utils::trim(expr.substr(nsFuncSplit + 2));
 	auto parenPos = rest.find('(');
 	if (parenPos == std::string::npos || rest.back() != ')') {
-		Utils::throw_err("Error: Invalid function call expression: " + expr);
+		Utils::throwErr("Error: Invalid function call expression: " + expr);
 	}
 	auto functionName = Utils::trim(rest.substr(0, parenPos));
 

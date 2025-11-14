@@ -25,9 +25,9 @@ C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(95,1): warning C4715: "Vars::
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(63,1): warning C4715: "Vars::evalFuncExpr": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(178,1): warning C4715: "Vars::numericOperation": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(215,1): warning C4715: "Vars::compareOperation": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(272,1): warning C4715: "Vars::compareBooleans": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(261,1): warning C4715: "Vars::compareNumbers": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(196,1): warning C4715: "Vars::booleanOperation": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(272,1): warning C4715: "Vars::compareBooleans": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(238,1): warning C4715: "Vars::compareStrings": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(294,1): warning C4715: "Vars::unaryOperation": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(178,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.

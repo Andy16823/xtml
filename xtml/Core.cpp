@@ -14,14 +14,14 @@ using namespace std;
 std::string Core::buildFile(const std::string& path)
 {
 	// Read file content
-	auto content = Utils::read_file(path);
+	auto content = Utils::readFile(path);
 
 	// Build root node and evaluate content
 	auto root = Core::buildRoot(path, content);
 
 	// Resolve the remaining placeholders in the content
 	content = Core::resolvePlaceholders(content, root->program.vars);
-	Utils::print_ln("Build completed.");
+	Utils::printLn("Build completed.");
 
 	// Return final content
 	return content;
@@ -61,7 +61,7 @@ std::unique_ptr<RootNode> Core::buildRoot(const std::string& path, std::string& 
 	}
 
 	// Return the built root node
-	Utils::printerr_ln("Finished building root for file: " + path);
+	Utils::printerrLn("Finished building root for file: " + path);
 	return root;
 }
 
@@ -105,23 +105,23 @@ void Core::readDefinitionBlocks(std::string& content, std::map<std::string, var>
 	auto blocks = Core::findTags(content, "xtmldef");
 	for (const auto& block : blocks) {
 		if (block.attributes.find("name") == block.attributes.end()) {
-			Utils::throw_err("Error: xtmldef block missing 'name' attribute.");
+			Utils::throwErr("Error: xtmldef block missing 'name' attribute.");
 		}
 		auto var_name = Utils::trim(block.attributes.at("name"));
 
 		if (block.self_closing) {
 			if (block.attributes.find("define") == block.attributes.end()) {
-				Utils::throw_err("Error: Self-closing xtmldef block missing 'define' attribute.");
+				Utils::throwErr("Error: Self-closing xtmldef block missing 'define' attribute.");
 			}
 			auto define = Utils::trim(block.attributes.at("define"));
 			var value = var{ define, Utils::predictVarType(define) };
 			vars[var_name] = value;
-			Utils::print_ln("Defined variable '" + var_name + "' with value '" + define + "' from self-closing xtmldef.");
+			Utils::printLn("Defined variable '" + var_name + "' with value '" + define + "' from self-closing xtmldef.");
 		}
 		else {	
 			var value = var{ Utils::trim(block.content), DT_STRING };
 			vars[var_name] = value;
-			Utils::print_ln("Defined variable '" + var_name + "' with value '" + block.content + "' from xtmldef block.");
+			Utils::printLn("Defined variable '" + var_name + "' with value '" + block.content + "' from xtmldef block.");
 		}
 		content = Utils::replace(content, block.full, "");
 	}
@@ -235,7 +235,7 @@ std::string Core::resolvePlaceholders(const std::string& content, const std::map
 			results[placeholder] = func_val;
 		}
 		else {
-			Utils::throw_err("Error: Unknown placeholder format: " + placeholder);
+			Utils::throwErr("Error: Unknown placeholder format: " + placeholder);
 		}
 	}
 

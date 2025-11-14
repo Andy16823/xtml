@@ -13,7 +13,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 	registry.RegisterNamespace("std");
 	registry.RegisterFunction("std", "toUpper", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type != DT_STRING) {
-			Utils::printerr_ln("Error: std::toupper expects a single string argument.");
+			Utils::printerrLn("Error: std::toupper expects a single string argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		auto result = args[0].value;
@@ -23,7 +23,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "toLower", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type != DT_STRING) {
-			Utils::printerr_ln("Error: std::tolower expects a single string argument.");
+			Utils::printerrLn("Error: std::tolower expects a single string argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		auto result = args[0].value;
@@ -32,8 +32,8 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "randStr", [](const vector<var>& args) -> var {
-		if (args.size() != 1 || args[0].type != DT_NUMBER || !Utils::is_number(args[0].value)) {
-			Utils::printerr_ln("Error: std::randStr expects a single numeric argument.");
+		if (args.size() != 1 || args[0].type != DT_NUMBER || !Utils::isNumber(args[0].value)) {
+			Utils::printerrLn("Error: std::randStr expects a single numeric argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		int length = std::stoi(args[0].value);
@@ -52,17 +52,17 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "isInt", [](const vector<var>& args) -> var {
 		if (args.size() != 1) {
-			Utils::printerr_ln("Error: std::isInt expects a single argument.");
+			Utils::printerrLn("Error: std::isInt expects a single argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 
-		bool is_int = args[0].type == DT_NUMBER && Utils::is_number(args[0].value);
+		bool is_int = args[0].type == DT_NUMBER && Utils::isNumber(args[0].value);
 		return var{ is_int ? "1" : "0", DT_BOOL };
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "isStr", [](const vector<var>& args) -> var {
 		if (args.size() != 1) {
-			Utils::printerr_ln("Error: std::isStr expects a single argument.");
+			Utils::printerrLn("Error: std::isStr expects a single argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		bool is_str = args[0].type == DT_STRING;
@@ -70,8 +70,8 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "toInt", [](const vector<var>& args) -> var {
-		if (args.size() != 1 || !Utils::is_number(args[0].value)) {
-			Utils::printerr_ln("Error: std::toInt expects a single string numeric argument");
+		if (args.size() != 1 || !Utils::isNumber(args[0].value)) {
+			Utils::printerrLn("Error: std::toInt expects a single string numeric argument");
 			return var{ "", DT_UNKNOWN };
 		}
 		return var{ args[0].value, DT_NUMBER };
@@ -79,7 +79,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "toStr", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type == DT_ARRAY) {
-			Utils::printerr_ln("Error: std::toStr expects a single numeric argument.");
+			Utils::printerrLn("Error: std::toStr expects a single numeric argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		return var{ args[0].value, DT_STRING };
@@ -87,7 +87,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "len", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type != DT_STRING) {
-			Utils::printerr_ln("Error: std::len expects a single string argument.");
+			Utils::printerrLn("Error: std::len expects a single string argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		return var{ std::to_string(args[0].value.length()), DT_NUMBER };
@@ -95,7 +95,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "trim", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type != DT_STRING) {
-			Utils::printerr_ln("Error: std::trim expects a single string argument.");
+			Utils::printerrLn("Error: std::trim expects a single string argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		return var{ Utils::trim(args[0].value), DT_STRING };
@@ -103,21 +103,21 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "trimQuotes", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type != DT_STRING) {
-			Utils::printerr_ln("Error: std::trimQuotes expects a single string argument.");
+			Utils::printerrLn("Error: std::trimQuotes expects a single string argument.");
 			return var{ "", DT_UNKNOWN };
 		}
-		return var{ Utils::trim_quotes(args[0].value), DT_STRING };
+		return var{ Utils::trimQuotes(args[0].value), DT_STRING };
 		}, 1, 1);
 
 	registry.RegisterFunction("std", "get", [](const vector<var>& args) -> var {
 		if (args.size() != 2 && args[0].type != DT_ARRAY && args[1].type != DT_NUMBER) {
-			Utils::printerr_ln("Error: std::get expects an array and a numeric index as arguments.");
+			Utils::printerrLn("Error: std::get expects an array and a numeric index as arguments.");
 			return var{ "", DT_UNKNOWN };
 		}
 		auto arr = args[0].array;
 		int index = std::stoi(args[1].value);
 		if (index < 0 || index >= (int)arr.size()) {
-			Utils::throw_err("Error: std::get index out of bounds.");
+			Utils::throwErr("Error: std::get index out of bounds.");
 		}
 		auto value = arr[index];
 		return value;
@@ -125,7 +125,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "count", [](const vector<var>& args) -> var {
 		if (args.size() != 1 || args[0].type != DT_ARRAY) {
-			Utils::printerr_ln("Error: std::count expects a single array argument.");
+			Utils::printerrLn("Error: std::count expects a single array argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		return var{ std::to_string(args[0].array.size()), DT_NUMBER };
@@ -133,7 +133,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 
 	registry.RegisterFunction("std", "print", [](const vector<var>& args) -> var {
 		if (args.size() != 1) {
-			Utils::printerr_ln("Error: std::print expects a single argument.");
+			Utils::printerrLn("Error: std::print expects a single argument.");
 			return var{ "", DT_UNKNOWN };
 		}
 		return var{ args[0].value , DT_STRING};
@@ -149,7 +149,7 @@ void ModuleStd::RegisterFunctions(FunctionRegistry& registry)
 			seed = std::stoul(args[0].value);
 		}
 		else {
-			Utils::printerr_ln("Error: std::uuid expects 0 or 1 numeric argument (seed).");
+			Utils::printerrLn("Error: std::uuid expects 0 or 1 numeric argument (seed).");
 			return var{ "", DT_UNKNOWN };
 		}
 

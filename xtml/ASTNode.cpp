@@ -168,7 +168,7 @@ EvalResult ForNode::evaluate(Program& program)
 		init->evaluate(program);	// Initialize loop variable
 	}
 	else {
-		Utils::throw_err("Error: For loop missing initialization statement.");
+		Utils::throwErr("Error: For loop missing initialization statement.");
 	}
 
 	// Evaluate condition
@@ -190,7 +190,7 @@ EvalResult ForNode::evaluate(Program& program)
 
 			if (increment) increment->evaluate(program);
 			else {
-				Utils::throw_err("Error: For loop missing increment statement.");
+				Utils::throwErr("Error: For loop missing increment statement.");
 			}
 			condResult = condition->evaluate(program);
 			continue;
@@ -200,7 +200,7 @@ EvalResult ForNode::evaluate(Program& program)
 		result = merge_results(result, bodyResult);
 		if (increment) increment->evaluate(program);
 		else {
-			Utils::throw_err("Error: For loop missing increment statement.");
+			Utils::throwErr("Error: For loop missing increment statement.");
 		}
 		condResult = condition->evaluate(program);
 	}
@@ -238,7 +238,7 @@ EvalResult FunctionNode::evaluate(Program& program)
 EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::string>& argValues)
 {
 	if(argValues.size() != this->arguments.size()) {
-		Utils::throw_err("Error: Function " + this->name + " called with incorrect number of arguments.");
+		Utils::throwErr("Error: Function " + this->name + " called with incorrect number of arguments.");
 	}
 
 	// Create a new program frame for the function call
@@ -250,7 +250,7 @@ EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::s
 	for (size_t i = 0; i < this->arguments.size(); i++) {
 		auto argExpr = dynamic_cast<VarExprNode*>(this->arguments[i].get());
 		if (argExpr == nullptr) {
-			Utils::throw_err("Error: Function argument must be a variable.");
+			Utils::throwErr("Error: Function argument must be a variable.");
 		}
 		var value;
 		value.value = argValues[i];
@@ -271,17 +271,17 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 	auto optype = Vars::getBinaryOpType(op);
 	// Early check for unknown operation
 	if (optype == BinaryOpType::Unknown) {
-		Utils::throw_err("Error: Unknown binary operation: " + op);
+		Utils::throwErr("Error: Unknown binary operation: " + op);
 	}
 
 	if (optype == BinaryOpType::Assignment) {
 		auto leftVar = dynamic_cast<VarExprNode*>(left.get());
 		if (leftVar == nullptr) {
-			Utils::throw_err("Error: Left side of assignment must be a variable.");
+			Utils::throwErr("Error: Left side of assignment must be a variable.");
 		}
 		auto rightResult = right->evaluate(program);
 		if(program.vars.find(leftVar->name) == program.vars.end()) {
-			Utils::throw_err("Error: Undefined variable: " + leftVar->name);
+			Utils::throwErr("Error: Undefined variable: " + leftVar->name);
 		}
 		program.vars[leftVar->name].value = rightResult.value;
 		rightResult.output = ""; // No output for assignment
@@ -386,7 +386,7 @@ EvalResult VarExprNode::evaluate(Program& program)
 		result.value = program.vars[this->name].value;
 	}
 	else {
-		Utils::throw_err("Error: Undefined variable: " + this->name);
+		Utils::throwErr("Error: Undefined variable: " + this->name);
 	}
 	return result;
 }
@@ -456,7 +456,7 @@ EvalResult UnaryExprNode::evaluate(Program& program)
 
 		// Check that variable exists
 		if (program.vars.find(varexpr->name) == program.vars.end()) {
-			Utils::throw_err("Error: Undefined variable: " + varexpr->name);
+			Utils::throwErr("Error: Undefined variable: " + varexpr->name);
 		}
 		auto varRef = program.vars[varexpr->name];
 
@@ -517,7 +517,7 @@ EvalResult FunctionCallNode::evaluate(Program& program)
 {
 	EvalResult result;
 	if (program.functions.find(this->functionName) == program.functions.end()) {
-		Utils::throw_err("Error: Undefined function: " + this->functionName);
+		Utils::throwErr("Error: Undefined function: " + this->functionName);
 	}
 	auto function = program.functions[this->functionName].function;
 
@@ -532,7 +532,7 @@ EvalResult FunctionCallNode::evaluate(Program& program)
 EvalResult ReturnNode::evaluate(Program& program)
 {
 	if(this->expression == nullptr) {
-		Utils::throw_err("Error: Return statement missing expression.");
+		Utils::throwErr("Error: Return statement missing expression.");
 	}
 
 	auto result = this->expression->evaluate(program);
@@ -544,23 +544,23 @@ EvalResult IncludeNode::evaluate(Program& program)
 {
 	// Create path to include file
 	std::string includeFullPath;
-	if(Utils::is_path_absolute(this->includePath)) {
+	if(Utils::isAbsolute(this->includePath)) {
 		includeFullPath = this->includePath;
 	}
 	else {
-		auto parentPath = Utils::file_path_parent(program.path);
+		auto parentPath = Utils::filePathParent(program.path);
 		includeFullPath = parentPath + "\\" + this->includePath;
 	}
 
 	// Read include file content
 	Program includeProgram;
 	includeProgram.path = includeFullPath;
-	auto content = Utils::read_file(includeFullPath);
+	auto content = Utils::readFile(includeFullPath);
 
 	// Build root for included content and replace block in content
 	auto root = Core::buildRoot(includeFullPath, content);
 	if (root == nullptr) {
-		Utils::throw_err("Error: Could not build include file: " + includeFullPath);
+		Utils::throwErr("Error: Could not build include file: " + includeFullPath);
 	}
 
 	// Move included root and evaluate content
@@ -588,7 +588,7 @@ EvalResult RootNode::evaluate()
 
 EvalResult RootNode::evaluate(Program& program)
 {
-	Utils::throw_err("Error: RootNode evaluate with Program parameter is not supported. Use the parameterless evaluate() method instead.");
+	Utils::throwErr("Error: RootNode evaluate with Program parameter is not supported. Use the parameterless evaluate() method instead.");
 	return {};
 }
 

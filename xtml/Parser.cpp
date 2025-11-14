@@ -54,26 +54,26 @@ std::unique_ptr<FunctionDeclNode> Parser::parseFunction()
 	function->name = get().value;
 
 	if (!match(TokenType::Symbol, "(")) {
-		Utils::throw_err("Error: Expected '(' after function name at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+		Utils::throwErr("Error: Expected '(' after function name at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 	}
 
 	// Parse parameters (not implemented yet)
 	while (true) {
 		// Early EOF check
 		if(peek().type == TokenType::EndOfFile) {
-			Utils::throw_err("Error: Unexpected end of file while parsing function parameters at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+			Utils::throwErr("Error: Unexpected end of file while parsing function parameters at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 		}
 
 		// Parse the parameter expression
 		auto param = parseExpression();
 		if(param == nullptr) {
-			Utils::throw_err("Error: Expected parameter expression in function parameter list at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+			Utils::throwErr("Error: Expected parameter expression in function parameter list at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 		}
 		function->arguments.push_back(std::move(param));
 		
 		if (!match(TokenType::Symbol, ",")) {
 			if(!match(TokenType::Symbol, ")")) {
-				Utils::throw_err("Error: Expected ',' or ')' in function parameter list at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+				Utils::throwErr("Error: Expected ',' or ')' in function parameter list at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 			}
 			else {
 				break;
@@ -103,12 +103,12 @@ std::unique_ptr<BlockNode> Parser::parseBlock()
 std::unique_ptr<BlockNode> Parser::parseBracketBlock()
 {
 	if(!match(TokenType::Symbol, "{")) {
-		Utils::throw_err("Error: Expected '{' to start block at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+		Utils::throwErr("Error: Expected '{' to start block at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 	}
 	auto blockNode = std::make_unique<BlockNode>();
 	while (!match(TokenType::Symbol, "}")) {
 		if(peek().type == TokenType::EndOfFile) {
-			Utils::throw_err("Error: Unexpected end of file while parsing block starting at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+			Utils::throwErr("Error: Unexpected end of file while parsing block starting at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 		}
 		auto stmt = parseStatement();
 		if (stmt != nullptr) {
@@ -174,7 +174,7 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseExprStatement(t);
 	}
 
-	Utils::throw_err("Error: Unable to parse statement at line " + std::to_string(t.line) + ", column " + std::to_string(t.column));
+	Utils::throwErr("Error: Unable to parse statement at line " + std::to_string(t.line) + ", column " + std::to_string(t.column));
 }
 
 std::unique_ptr<ExprNode> Parser::parseExpression()
@@ -263,7 +263,7 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 				}
 				if (!match(TokenType::Symbol, ",")) {
 					if (!match(TokenType::Symbol, ")")) {
-						Utils::throw_err("Error");
+						Utils::throwErr("Error");
 					}
 					break;
 				}
@@ -279,22 +279,22 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 	if (t.type == TokenType::Symbol && t.value == "(") {
 		auto expr = parseExpression();
 		if (!match(TokenType::Symbol, ")")) {
-			Utils::throw_err("Error: Expected ')' after expression at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+			Utils::throwErr("Error: Expected ')' after expression at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 		return expr;
 	}
 
 	if (t.type == TokenType::Keyword && t.value == "expr") {
 		if(!match(TokenType::Symbol, "{")) {
-			Utils::throw_err("Error: Expected '{' after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+			Utils::throwErr("Error: Expected '{' after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 		auto stmtExpr = std::make_unique<StmtExprNode>();
 		auto stmt = parseStatement();
 		if (stmt == nullptr) {
-			Utils::throw_err("Error: Expected statement after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+			Utils::throwErr("Error: Expected statement after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 		if(!match(TokenType::Symbol, "}")) {
-			Utils::throw_err("Error: Expected '}' after statement in 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+			Utils::throwErr("Error: Expected '}' after statement in 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 		stmtExpr->statement = std::move(stmt);
 		return stmtExpr;
@@ -347,11 +347,11 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 	get(); // Consume 'if' keyword
 	auto ifStmt = std::make_unique<IfStatementNode>();
 	if (!match(TokenType::Symbol, "(")) {
-		Utils::throw_err("Error: Expected '(' after 'if' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected '(' after 'if' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	ifStmt->condition = parseExpression();
 	if (!match(TokenType::Symbol, ")")) {
-		Utils::throw_err("Error: Expected ')' after if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ')' after if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	ifStmt->body = parseBracketBlock();
 
@@ -359,7 +359,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 	while (match(TokenType::Keyword, "else")) {
 		// Eearly end of file check
 		if(peek().type == TokenType::EndOfFile) {
-			Utils::throw_err("Error: Unexpected end of file after 'else' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			Utils::throwErr("Error: Unexpected end of file after 'else' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 		}
 
 		if (match(TokenType::Keyword, "if")) {
@@ -368,7 +368,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 
 			// Check for condition
 			if (!match(TokenType::Symbol, "(")) {
-				Utils::throw_err("Error: Expected '(' after 'else if' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+				Utils::throwErr("Error: Expected '(' after 'else if' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 			}
 
 			// Parse condition
@@ -376,7 +376,7 @@ std::unique_ptr<IfStatementNode> Parser::parseIfStatement(const Token& token)
 
 			// Expect closing parenthesis
 			if (!match(TokenType::Symbol, ")")) {
-				Utils::throw_err("Error: Expected ')' after else if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+				Utils::throwErr("Error: Expected ')' after else if condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 			}
 
 			// Parse body for else if and add to ifStmt
@@ -404,7 +404,7 @@ std::unique_ptr<HtmlBlockNode> Parser::parseHtmlBlockNode()
 {
 	// Check for opening {
 	if(!match(TokenType::Symbol, "{")) {
-		Utils::throw_err("Error: Expected '{' to start HTML block at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
+		Utils::throwErr("Error: Expected '{' to start HTML block at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().column) + ".");
 	}
 
 	// Create HTML block node
@@ -414,7 +414,7 @@ std::unique_ptr<HtmlBlockNode> Parser::parseHtmlBlockNode()
 	while (!match(TokenType::Symbol, "}")) {
 		const auto& t = peek();
 		if(peek().type == TokenType::EndOfFile) {
-			Utils::throw_err("Error: Unexpected end of file while parsing HTML block at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+			Utils::throwErr("Error: Unexpected end of file while parsing HTML block at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 
 		// Check for HTML statement
@@ -433,7 +433,7 @@ std::unique_ptr<HtmlBlockNode> Parser::parseHtmlBlockNode()
 		}
 		
 		// Otherwise, error
-		Utils::throw_err("Error: Unexpected token '" + t.value + "' in HTML block at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+		Utils::throwErr("Error: Unexpected token '" + t.value + "' in HTML block at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 	}
 	return htmlBlock;
 }
@@ -446,7 +446,7 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 	while (true) {
 		// End of file check
 		if(peek().type == TokenType::EndOfFile) {
-			Utils::throw_err("Error: Unexpected end of file while parsing HTML tag <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			Utils::throwErr("Error: Unexpected end of file while parsing HTML tag <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 		}
 
 		// First exit condition tag end
@@ -462,10 +462,10 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 		// Parse attributes
 		std::string attrName = get().value;
 		if (!match(TokenType::Operator, "=")) {
-			Utils::throw_err("Error: Expected '=' after attribute name '" + attrName + "' in HTML tag at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			Utils::throwErr("Error: Expected '=' after attribute name '" + attrName + "' in HTML tag at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 		}
 		std::string attrValue = get().value;
-		htmlStmt->attributes[attrName] = Utils::trim_quotes(attrValue);
+		htmlStmt->attributes[attrName] = Utils::trimQuotes(attrValue);
 	}
 
 	// If not self-closing, parse content and closing tag
@@ -474,7 +474,7 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 		std::string content;
 		while (!match(TokenType::Operator , "</")) {
 			if(peek().type == TokenType::EndOfFile) {
-				Utils::throw_err("Error: Unexpected end of file while parsing content of <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+				Utils::throwErr("Error: Unexpected end of file while parsing content of <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 			}
 
 			// Check for nested tags
@@ -493,10 +493,10 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 		// Expect closing tag since the while loop exited and removed </
 		std::string closingTagName = get().value;
 		if(htmlStmt->tagName != closingTagName) {
-			Utils::throw_err("Error: Mismatched closing tag </" + closingTagName + "> for <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			Utils::throwErr("Error: Mismatched closing tag </" + closingTagName + "> for <" + htmlStmt->tagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 		}
 		if (!match(TokenType::Operator, ">")) {
-			Utils::throw_err("Error: Expected '>' at end of closing tag </" + closingTagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			Utils::throwErr("Error: Expected '>' at end of closing tag </" + closingTagName + "> at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 		}
 		return htmlStmt;
 	}
@@ -514,7 +514,7 @@ std::unique_ptr<HtmlTextNode> Parser::parseHtmlTextNode(const Token& token)
 	auto next = peek();
 	while (next.type != TokenType::Operator && (next.value != "<" || next.value != "</")) {
 		if(next.type == TokenType::EndOfFile) {
-			Utils::throw_err("Error: Unexpected end of file while parsing HTML text node at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			Utils::throwErr("Error: Unexpected end of file while parsing HTML text node at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 		}
 		content << get().value << " ";
 		next = peek();
@@ -531,7 +531,7 @@ std::unique_ptr<ReturnNode> Parser::parseReturnStatement(const Token& token)
 	auto returnNode = std::make_unique<ReturnNode>();
 	returnNode->expression = parseExpression();
 	if(!match(TokenType::Symbol, ";")) {
-		Utils::throw_err("Error: Expected ';' after return statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ';' after return statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return returnNode;
 }
@@ -541,11 +541,11 @@ std::unique_ptr<IncludeNode> Parser::parseIncludeStatement(const Token& token)
 	get(); // Consume 'include' keyword
 	auto includeNode = std::make_unique<IncludeNode>();
 	if(peek().type != TokenType::StringLiteral) {
-		Utils::throw_err("Error: Expected string literal for include path at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected string literal for include path at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
-	includeNode->includePath = Utils::trim_quotes(get().value);
+	includeNode->includePath = Utils::trimQuotes(get().value);
 	if (!match(TokenType::Symbol, ";")) {
-		Utils::throw_err("Error: Expected ';' after include statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ';' after include statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return includeNode;
 }
@@ -555,7 +555,7 @@ std::unique_ptr<BreakNode> Parser::parseBreakStatement(const Token& token)
 	get(); // Consume 'break' keyword
 	auto breakNode = std::make_unique<BreakNode>();
 	if (!match(TokenType::Symbol, ";")) {
-		Utils::throw_err("Error: Expected ';' after break statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ';' after break statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return breakNode;
 }
@@ -565,7 +565,7 @@ std::unique_ptr<ContinueNode> Parser::parseContinueStatement(const Token& token)
 	get(); // Consume 'continue' keyword
 	auto continueNode = std::make_unique<ContinueNode>();
 	if (!match(TokenType::Symbol, ";")) {
-		Utils::throw_err("Error: Expected ';' after continue statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ';' after continue statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return continueNode;
 }
@@ -574,15 +574,15 @@ std::unique_ptr<PrintNode> Parser::parsePrintStatement(const Token& token)
 {
 	get(); // Consume 'print' keyword
 	if (!match(TokenType::Symbol, "(")) {
-		Utils::throw_err("Error: Expected '(' after 'print' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected '(' after 'print' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	auto printNode = std::make_unique<PrintNode>();
 	printNode->expression = parseExpression();
 	if (!match(TokenType::Symbol, ")")) {
-		Utils::throw_err("Error: Expected ')' after print expression at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ')' after print expression at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	if (!match(TokenType::Symbol, ";")) {
-		Utils::throw_err("Error: Expected ';' after print statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ';' after print statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return printNode;
 }
@@ -592,19 +592,19 @@ std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)
 	get(); // Consume 'for' keyword
 	auto forNode = std::make_unique<ForNode>();
 	if (!match(TokenType::Symbol, "(")) {
-		Utils::throw_err("Error: Expected '(' after 'for' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected '(' after 'for' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	// Parse initialization No semicolon removal here, handled in parseStatement
 	forNode->init = parseStatement();
 	// Parse condition
 	forNode->condition = parseExpression();
 	if(!match(TokenType::Symbol, ";")) {
-		Utils::throw_err("Error: Expected ';' after for loop condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ';' after for loop condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	// Parse increment
 	forNode->increment = parseExpression();
 	if (!match(TokenType::Symbol, ")")) {
-		Utils::throw_err("Error: Expected ')' after for loop clauses at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ')' after for loop clauses at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	forNode->body = parseBracketBlock();
 	return forNode;
@@ -615,11 +615,11 @@ std::unique_ptr<WhileNode> Parser::parseWhileStatement(const Token& token)
 	get(); // Consume 'while' keyword
 	auto whileNode = std::make_unique<WhileNode>();
 	if (!match(TokenType::Symbol, "(")) {
-		Utils::throw_err("Error: Expected '(' after 'while' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected '(' after 'while' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	whileNode->condition = parseExpression();
 	if (!match(TokenType::Symbol, ")")) {
-		Utils::throw_err("Error: Expected ')' after while loop condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		Utils::throwErr("Error: Expected ')' after while loop condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	whileNode->body = parseBracketBlock();
 	return whileNode;
