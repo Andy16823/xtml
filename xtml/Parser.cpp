@@ -285,10 +285,16 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 	}
 
 	if (t.type == TokenType::Keyword && t.value == "expr") {
+		if(!match(TokenType::Symbol, "{")) {
+			Utils::throw_err("Error: Expected '{' after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+		}
 		auto stmtExpr = std::make_unique<StmtExprNode>();
 		auto stmt = parseStatement();
 		if (stmt == nullptr) {
 			Utils::throw_err("Error: Expected statement after 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+		}
+		if(!match(TokenType::Symbol, "}")) {
+			Utils::throw_err("Error: Expected '}' after statement in 'expr' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
 		}
 		stmtExpr->statement = std::move(stmt);
 		return stmtExpr;

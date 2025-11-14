@@ -32,13 +32,15 @@ class Core
 public:
 	static std::vector<std::string> parse_blocks(const std::string& content, const std::string& start_tag, const std::string& end_tag);
 	static std::map<std::string, var> parse_block(const std::string& content, std::map<std::string, var>& vars);
-	static std::string resolve_include(const std::string& include_path, std::map<std::string, var>& vars, XtmlTag tag, bool resolve_global = true);
 	static std::string remove_blocks(const std::string& content, const std::string& start_tag, const std::string& end_tag);
 	static std::string clean_content(std::string& content);	
-	static std::string build_file(const std::string& path, std::map<std::string, var>& vars);
 
 	static std::string buildFile(const std::string& path);
 	static std::unique_ptr<RootNode> buildRoot(const std::string& path, std::string& content);
+
+	static std::vector<XtmlTag> findTags(const std::string& content, const std::string& tag);
+	static void readDefinitionBlocks(std::string& content, std::map<std::string, var>& vars);
+
 	static void write_file(const std::string& content, const std::string& output_path);
 	static std::vector<XtmlTag> find_xtml_tags(const std::string& content);
 	static std::map<std::string, std::string> parse_xtml_attributes(const std::string& tag);

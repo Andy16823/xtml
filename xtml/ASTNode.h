@@ -9,7 +9,9 @@
 #include "Core.h"
 
 
-
+/// <summary>
+/// Evaluation Result
+/// </summary>
 struct EvalResult {
 	std::string value; // The evaluated content TODO: rename to value?
 	bool should_break = false; // For loop control
@@ -77,6 +79,9 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Xtml Block Node
+/// </summary>
 class XtmlBlockNode : public ASTNode {
 public:
 	Program localProgram;
@@ -110,6 +115,9 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Function Call Node
+/// </summary>
 class FunctionCallNode : public ExprNode {
 	
 public:
@@ -119,6 +127,9 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Return Node for functions
+/// </summary>
 class ReturnNode : public StmtNode {
 public:
 	std::unique_ptr<ExprNode> expression;
@@ -293,6 +304,7 @@ public:
 
 /// <summary>
 /// For Each Node
+/// Not implemented yet
 /// </summary>
 class ForEachNode : public ASTNode {
 public:
@@ -303,7 +315,7 @@ public:
 };
 
 /// <summary>
-/// Break Node
+/// Break Node for loops
 /// </summary>
 class BreakNode : public StmtNode
 {
@@ -313,7 +325,7 @@ public:
 };
 
 /// <summary>
-/// Continue Node
+/// Continue Node for loops
 /// </summary>
 class ContinueNode : public StmtNode
 {
@@ -322,6 +334,12 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Html Block Node
+/// Holds a block of HTML statements
+/// Note: returns the html within the evaluation value not output
+/// also deeply evaluates its children and merges there result values
+/// </summary>
 class HtmlBlockNode : public ASTNode {
 	
 public:
@@ -329,7 +347,9 @@ public:
 };
 
 /// <summary>
-/// HTML Statement Root Node
+/// Root HTML Statement Node
+/// Note: wraps an HTML block
+/// e.g. html { ... }
 /// </summary>
 class HtmlStmtRootNode : public StmtNode {
 	public:
@@ -339,6 +359,9 @@ class HtmlStmtRootNode : public StmtNode {
 
 /// <summary>
 /// Html Statement Node
+/// An HTML tag with attributes and children
+/// Note: Returns the html within the evaluation value not output
+/// since its the evaluated content
 /// </summary>
 class HtmlStmtNode : public StmtNode {
 public:
@@ -349,7 +372,8 @@ public:
 };
 
 /// <summary>
-/// Html Text Node
+/// Plain HTML Text Node
+/// Note: must be an string literal
 /// </summary>
 class HtmlTextNode : public StmtNode {
 public:
@@ -359,6 +383,10 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Include Node
+/// Includes another XTML file and evaluates its content
+/// </summary>
 class IncludeNode : public StmtNode {
 public:
 	std::string includePath;
@@ -366,6 +394,10 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Print Node
+/// Note: prints the eval result value of the expression to the output
+/// </summary>
 class PrintNode : public StmtNode {
 public:
 	std::unique_ptr<ExprNode> expression;
@@ -373,6 +405,11 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Node that represents a statement used as an expression
+/// Note: need to be careful with this as not all statements can be expressions
+/// also need to be explicit market with expr beforehand e.g. return expr html { ... };
+/// </summary>
 class StmtExprNode : public ExprNode {
 public:
 	std::unique_ptr<StmtNode> statement;

@@ -25,6 +25,11 @@ EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b, bool
 	}else if (a.should_continue || b.should_continue) {
 		result.should_continue = true;
 	}
+
+	if (a.should_return || b.should_return) {
+		result.should_return = true;
+	}
+
 	return result;
 }
 
@@ -567,7 +572,7 @@ EvalResult IncludeNode::evaluate(Program& program)
 
 	// Return included content
 	EvalResult result;
-	result.value = content;
+	result.output = content;
 	return result;
 }
 

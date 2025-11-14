@@ -71,46 +71,6 @@ map<string, var> Core::parse_block(const std::string& content, map<string, var>&
 }
 
 /// <summary>
-/// Resolve an include directive
-/// </summary>
-/// <param name="include_path"></param>
-/// <param name="vars"></param>
-/// <param name="tag"></param>
-/// <param name="resolve_global"></param>
-/// <returns></returns>
-string Core::resolve_include(const string& include_path, map<string, var>& vars, XtmlTag tag, bool resolve_global)
-{
-	//// Resolve an include directive
-	//Utils::print_ln("Resolving include: " + include_path);
-	//map<string, var> local_vars;
-
-	//// Copy global vars to local if resolve as global
-	//if (resolve_global) {
-	//	local_vars.insert(vars.begin(), vars.end());
-	//}
-
-	//// Parse parameters from tag attributes and resolve them if needed
-	//auto param_vars = params_to_vars(tag.attributes);
-	//for (auto& [k, v] : param_vars) {
-	//	v.value = Vars::replace_vars(v.value, vars);
-	//}
-	//local_vars = Vars::merge_vars(local_vars, param_vars);
-
-	//// Read and build included content
-	//auto include_content = Utils::read_file(include_path);
-	//Utils::print_ln("Processing include: " + include_path);
-	//include_content = build_content(include_content, Utils::file_path_parent(include_path), local_vars);
-
-	//// Merge local vars back to global if resolve as global
-	//if (resolve_global) {
-	//	vars = Vars::merge_vars(vars, local_vars);
-	//}
-
-	//return include_content;
-	return "";
-}
-
-/// <summary>
 /// Remove blocks from content based on start and end tags
 /// </summary>
 /// <param name="content"></param>
@@ -147,22 +107,6 @@ string Core::clean_content(string& content)
 	return cleaned;
 }
 
-/// <summary>
-/// Build a file by processing its content and resolving includes and variables
-/// </summary>
-/// <param name="path"></param>
-/// <param name="vars"></param>
-/// <returns></returns>
-string Core::build_file(const string& path, map<string, var>& vars)
-{
-	//Utils::print_ln(string("Building file ") + path);
-	//auto content = Utils::read_file(path);
-	//auto base_path = Utils::file_path_parent(path);
-
-	//return build_content(content, base_path, vars);
-	return "";
-}
-
 std::string Core::buildFile(const std::string& path)
 {
 	// Read file content
@@ -188,6 +132,9 @@ std::unique_ptr<RootNode> Core::buildRoot(const std::string& path, std::string& 
 	auto root = std::make_unique<RootNode>();
 	root->program.path = path;
 
+	// Read definition blocks and populate root program vars
+	Core::readDefinitionBlocks(content, root->program.vars);
+
 	// Parse blocks and evaluate the content
 	for (const auto& block : blocks) {
 		if (!block.self_closing) {
@@ -212,6 +159,68 @@ std::unique_ptr<RootNode> Core::buildRoot(const std::string& path, std::string& 
 	// Return the built root node
 	Utils::printerr_ln("Finished building root for file: " + path);
 	return root;
+}
+
+std::vector<XtmlTag> Core::findTags(const std::string& content, const std::string& tag)
+{
+	vector<XtmlTag> tags;
+	std::string pattern = "<" + tag + R"(\b([^>]*)\/>|<)" + tag + R"(\b([^>]*)>([\s\S]*?)<\/)" + tag + ">";
+	regex re(pattern);
+
+	auto it = sregex_iterator(content.begin(), content.end(), re);
+	auto end = sregex_iterator();
+
+	for (; it != end; ++it) {
+		smatch m = *it;
+		XtmlTag tag;
+
+		if (m[1].matched) {
+			// matched first alternative: self-closing
+			tag.full = m.str(0);
+			tag.head = string("<xtml") + m[1].str() + "/>";
+			tag.content = "";
+			tag.self_closing = true;
+		}
+		else {
+			// matched second alternative: block
+			tag.full = m.str(0);
+			tag.head = string("<xtml") + m[2].str() + ">";
+			tag.content = m[3].str();
+			tag.self_closing = false;
+		}
+
+		tag.attributes = Core::parse_xtml_attributes(tag.head);
+		tags.push_back(std::move(tag));
+	}
+
+	return tags;
+}
+
+void Core::readDefinitionBlocks(std::string& content, std::map<std::string, var>& vars)
+{
+	auto blocks = Core::findTags(content, "xtmldef");
+	for (const auto& block : blocks) {
+		if (block.attributes.find("name") == block.attributes.end()) {
+			Utils::throw_err("Error: xtmldef block missing 'name' attribute.");
+		}
+		auto var_name = Utils::trim(block.attributes.at("name"));
+
+		if (block.self_closing) {
+			if (block.attributes.find("define") == block.attributes.end()) {
+				Utils::throw_err("Error: Self-closing xtmldef block missing 'define' attribute.");
+			}
+			auto define = Utils::trim(block.attributes.at("define"));
+			var value = var{ define, Utils::predictVarType(define) };
+			vars[var_name] = value;
+			Utils::print_ln("Defined variable '" + var_name + "' with value '" + define + "' from self-closing xtmldef.");
+		}
+		else {	
+			var value = var{ Utils::trim(block.content), DT_STRING };
+			vars[var_name] = value;
+			Utils::print_ln("Defined variable '" + var_name + "' with value '" + block.content + "' from xtmldef block.");
+		}
+		content = Utils::replace(content, block.full, "");
+	}
 }
 
 /// <summary>
