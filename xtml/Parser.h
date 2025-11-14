@@ -43,5 +43,6 @@ public:
 
 	// Loops
 	std::unique_ptr<ForNode> parseForStatement(const Token& token); // Parse for loops
+	std::unique_ptr<WhileNode> parseWhileStatement(const Token& token); // Parse while loops
 };
 

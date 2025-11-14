@@ -138,6 +138,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseForStatement(t);
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "while") {
+		return parseWhileStatement(t);
+	}
+
 	if (t.type == TokenType::Operator && t.value == "<") {
 		return parseHtmlStatement(t);
 	}
@@ -567,4 +571,19 @@ std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)
 	}
 	forNode->body = parseBracketBlock();
 	return forNode;
+}
+
+std::unique_ptr<WhileNode> Parser::parseWhileStatement(const Token& token)
+{
+	get(); // Consume 'while' keyword
+	auto whileNode = std::make_unique<WhileNode>();
+	if (!match(TokenType::Symbol, "(")) {
+		Utils::throw_err("Error: Expected '(' after 'while' at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	whileNode->condition = parseExpression();
+	if (!match(TokenType::Symbol, ")")) {
+		Utils::throw_err("Error: Expected ')' after while loop condition at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	whileNode->body = parseBracketBlock();
+	return whileNode;
 }

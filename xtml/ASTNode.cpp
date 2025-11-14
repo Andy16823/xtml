@@ -118,6 +118,36 @@ EvalResult TextNode::evaluate(Program& program)
 EvalResult WhileNode::evaluate(Program& program)
 {
 	EvalResult result;
+
+	auto condResult = condition->evaluate(program);
+	auto cond = Utils::toBool(condResult.content);
+	while (cond) {
+		// Evaluate body
+		auto bodyResult = this->body->evaluate(program);
+
+		// Check for break
+		if (bodyResult.should_break) {
+			bodyResult.should_break = false;
+			result = merge_results(result, bodyResult);
+			break;
+		}
+
+		// Check for continue (skip to next iteration)
+		if (bodyResult.should_continue) {
+			bodyResult.should_continue = false;
+			result = merge_results(result, bodyResult);
+			// Re-evaluate condition
+			condResult = condition->evaluate(program);
+			cond = Utils::toBool(condResult.content);
+			continue;
+		}
+
+		// Normal execution
+		result = merge_results(result, bodyResult);
+		condResult = condition->evaluate(program);
+		cond = Utils::toBool(condResult.content);
+	}
+
 	return result;
 }
 

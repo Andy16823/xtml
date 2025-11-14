@@ -267,11 +267,11 @@ public:
 /// <summary>
 /// While Node
 /// </summary>
-class WhileNode : public ASTNode
+class WhileNode : public StmtNode
 {
 public:
 	std::unique_ptr<ExprNode> condition;
-	std::vector<std::unique_ptr<BlockNode>> body;
+	std::unique_ptr<BlockNode> body;
 
 	WhileNode() = default;
 	EvalResult evaluate(Program& program) override;
