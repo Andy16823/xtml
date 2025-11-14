@@ -1,4 +1,8 @@
-﻿  Parser.cpp
+﻿  ASTNode.cpp
+  Core.cpp
+  Parser.cpp
+  Code wird generiert...
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(178,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(497,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(482,1): warning C4715: "UnaryExprNode::evaluate": Nicht alle Codepfade geben einen Wert zurück.
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe

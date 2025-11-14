@@ -11,11 +11,11 @@
 
 
 struct EvalResult {
-	std::string content; // The evaluated content TODO: rename to value?
+	std::string value; // The evaluated content TODO: rename to value?
 	bool should_break = false; // For loop control
 	bool should_continue = false; // For loop control
 	bool should_return = false; // For function return control
-	std::string printed_output; // Captured printed output
+	std::string output; // Captured printed output
 };
 
 
