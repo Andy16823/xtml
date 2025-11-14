@@ -227,11 +227,11 @@ std::string Core::resolvePlaceholders(const std::string& content, const std::map
 		inner = Utils::trim(inner);
 		if (inner[0] == '@') {
 			string var_name = inner.substr(1);
-			var var_val = Vars::eval_expr(var_name, vars);
+			var var_val = Vars::evalExpr(var_name, vars);
 			results[placeholder] = var_val;
 		}
-		else if (Vars::is_function_expr(inner)) {
-			var func_val = Vars::eval_func_expr(inner, vars);
+		else if (Vars::isFunctionExpr(inner)) {
+			var func_val = Vars::evalFuncExpr(inner, vars);
 			results[placeholder] = func_val;
 		}
 		else {

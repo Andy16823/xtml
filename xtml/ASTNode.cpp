@@ -116,7 +116,7 @@ EvalResult TextNode::evaluate(Program& program)
 {
 	//TODO: Refactor here to ???
 	EvalResult result;
-	auto value = Vars::eval_expr(m_value, program.vars);
+	auto value = Vars::evalExpr(m_value, program.vars);
 	if (value.type != DT_UNKNOWN) {
 		result.value = value.value;
 	}
@@ -268,7 +268,7 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 {
 	EvalResult result;
 
-	auto optype = Vars::get_binary_op_type(op);
+	auto optype = Vars::getBinaryOpType(op);
 	// Early check for unknown operation
 	if (optype == BinaryOpType::Unknown) {
 		Utils::throw_err("Error: Unknown binary operation: " + op);

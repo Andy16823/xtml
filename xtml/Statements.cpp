@@ -199,8 +199,8 @@ bool Statements::resolve_condition(const std::string& condition, const std::map<
 		return resolve_conditions(conds, cond_ops, vars);
 	}
 
-	left = Vars::eval_expr(tokens[0], vars);
-	right = Vars::eval_expr(tokens[2], vars);
+	left = Vars::evalExpr(tokens[0], vars);
+	right = Vars::evalExpr(tokens[2], vars);
 	std::string op = tokens[1];
 
 	if (left.type == DT_UNKNOWN || right.type == DT_UNKNOWN) {
