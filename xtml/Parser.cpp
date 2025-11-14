@@ -217,26 +217,32 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 {
 	const Token& t = get(); // Consume token and return it
 
+	// Case 10
 	if (t.type == TokenType::IntegerLiteral) {
 		return std::make_unique<IntegerLiteralNode>(std::stoi(t.value));
 	}
 
+	// Case "Hello"
 	if (t.type == TokenType::StringLiteral) {
 		return std::make_unique<StringLiteralNode>(t.value);
 	}
 
+	// Case 3.14f
 	if (t.type == TokenType::FloatLiteral) {
 		return std::make_unique<FloatLiteralNode>(std::stod(t.value));
 	}
 
+	// Case 2.71828
 	if (t.type == TokenType::DoubleLiteral) {
 		return std::make_unique<DoubleLiteralNode>(std::stod(t.value));
 	}
 
+	// Case true/false
 	if (t.type == TokenType::Identifier && (t.value == "true" || t.value == "false")) {
 		return std::make_unique<BoolLiteralNode>(t.value == "true");
 	}
 
+	// Case variable or function call
 	if (t.type == TokenType::Identifier) {
 		if (match(TokenType::Symbol, "("))
 		{
@@ -259,6 +265,15 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 		else {
 			return std::make_unique<VarExprNode>(t.value);
 		}
+	}
+
+	// Case (expression)
+	if (t.type == TokenType::Symbol && t.value == "(") {
+		auto expr = parseExpression();
+		if (!match(TokenType::Symbol, ")")) {
+			Utils::throw_err("Error: Expected ')' after expression at line " + std::to_string(t.line) + ", column " + std::to_string(t.column) + ".");
+		}
+		return expr;
 	}
 
 	throw std::runtime_error("Error: Unexpected token '" + t.value + "' at line " + std::to_string(t.line) + ", column " + std::to_string(t.column));

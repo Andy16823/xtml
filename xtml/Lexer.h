@@ -70,7 +70,8 @@ private:
 		"=",
 		">",
 		"<",
-		"&"
+		"&",
+		"|"
 	};
 
 	char peek() const;

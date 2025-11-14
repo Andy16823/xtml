@@ -28,7 +28,7 @@ static bool ends_with(const std::string& str, const std::string& suffix);
 static bool is_path_absolute(const std::string& path);
 static std::string generate_uuid();
 static DataType predictVarType(const std::string& value);
-
+static bool toBool(const std::string& value);
 
 
 // Parsers

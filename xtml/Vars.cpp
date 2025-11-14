@@ -654,5 +654,8 @@ BinaryOpType Vars::get_binary_op_type(const std::string& op)
 	else if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%" || op == "^" || op == "//") {
 		return BinaryOpType::Arithmetic;
 	}
+	else if (op == "&&" || op == "||") {
+		return BinaryOpType::Logical;
+	}
 	return BinaryOpType::Unknown;
 }

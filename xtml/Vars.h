@@ -16,6 +16,7 @@ enum class BinaryOpType {
 	Assignment, 
 	Comparison, 
 	Arithmetic, 
+	Logical,
 	Unknown 
 };
 

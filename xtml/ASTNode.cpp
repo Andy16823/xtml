@@ -251,6 +251,40 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 		return rightResult; // Return the assigned value
 	}
 
+	// Logic operation
+	if (optype == BinaryOpType::Logical) {
+		if (op == "&&") {
+			auto leftresult = left->evaluate(program);
+			// Short-circuit evaluation
+			if (leftresult.content == "false") {
+				result.content = "false";
+				return result;
+			}
+			auto rightresult = right->evaluate(program);
+			if (rightresult.content == "false") {
+				result.content = "false";
+				return result;
+			}
+			result.content = "true";
+			return result;
+		}
+		if (op == "||") {
+			auto leftresult = left->evaluate(program);
+			// Short-circuit evaluation
+			if (leftresult.content == "true") {
+				result.content = "true";
+				return result;
+			}
+			auto rightresult = right->evaluate(program);
+			if (rightresult.content == "true") {
+				result.content = "true";
+				return result;
+			}
+			result.content = "false";
+			return result;
+		}
+	}
+
 	// Evaluate left and right expressions
 	auto leftResult = left->evaluate(program);
 	auto rightResult = right->evaluate(program);

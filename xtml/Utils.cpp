@@ -224,6 +224,14 @@ DataType Utils::predictVarType(const std::string& value)
 	return DT_STRING; // Default to string
 }
 
+bool Utils::toBool(const std::string& value)
+{
+	if (value == "true" || value == "1") {
+		return true;
+	}
+	return false;
+}
+
 std::string Utils::parse_parantheses(const std::string& str)
 {
 	string current;
