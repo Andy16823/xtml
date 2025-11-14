@@ -305,7 +305,7 @@ public:
 /// <summary>
 /// Break Node
 /// </summary>
-class BreakNode : public ASTNode
+class BreakNode : public StmtNode
 {
 public:
 	BreakNode() {}
@@ -315,7 +315,7 @@ public:
 /// <summary>
 /// Continue Node
 /// </summary>
-class ContinueNode : public ASTNode
+class ContinueNode : public StmtNode
 {
 public:
 	ContinueNode() {}

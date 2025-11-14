@@ -38,6 +38,8 @@ public:
 	std::unique_ptr<HtmlTextNode> parseHtmlTextNode(const Token& token); // Parse HTML text nodes
 	std::unique_ptr<ReturnNode> parseReturnStatement(const Token& token); // Parse return statements
 	std::unique_ptr<IncludeNode> parseIncludeStatement(const Token& token); // Parse include statements
+	std::unique_ptr<BreakNode> parseBreakStatement(const Token& token); // Parse break statements
+	std::unique_ptr<ContinueNode> parseContinueStatement(const Token& token); // Parse continue statements
 
 	// Loops
 	std::unique_ptr<ForNode> parseForStatement(const Token& token); // Parse for loops

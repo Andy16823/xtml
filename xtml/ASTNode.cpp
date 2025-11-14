@@ -50,9 +50,23 @@ EvalResult BlockNode::evaluate(Program& program)
 	EvalResult result;
 	for (auto& child : children) {
 		auto childResult = child->evaluate(program);
+		// Handle Return
 		if (childResult.should_return) {
 			return childResult;
 		}
+
+		// Handle Break
+		if (childResult.should_break) {
+			result.should_break = true;
+			return result;
+		}
+
+		// Handle Continue
+		if (childResult.should_continue) {
+			result.should_continue = true;
+			return result;
+		}
+
 		result = merge_results(result, childResult);
 	}
 	return result;
@@ -123,18 +137,33 @@ EvalResult ForNode::evaluate(Program& program)
 	auto condResult = condition->evaluate(program);
 	while (condResult.content == "true") {
 		auto bodyResult = body->evaluate(program);
-		result = merge_results(result, bodyResult);
-		// TODO: Handle break/continue
-		
-		// Execute increment
-		if (increment != nullptr) {
-			increment->evaluate(program);
+
+		// Handle break, we exit the loop
+		if (bodyResult.should_break) {
+			bodyResult.should_break = false;
+			result = merge_results(result, bodyResult);
+			break;
 		}
+
+		// Handle continue, we skip to the next iteration
+		if (bodyResult.should_continue) {
+			bodyResult.should_continue = false;
+			result = merge_results(result, bodyResult);
+
+			if (increment) increment->evaluate(program);
+			else {
+				Utils::throw_err("Error: For loop missing increment statement.");
+			}
+			condResult = condition->evaluate(program);
+			continue;
+		}
+
+		// Normal execution
+		result = merge_results(result, bodyResult);
+		if (increment) increment->evaluate(program);
 		else {
 			Utils::throw_err("Error: For loop missing increment statement.");
 		}
-
-		// Re-evaluate condition
 		condResult = condition->evaluate(program);
 	}
 
@@ -149,6 +178,7 @@ EvalResult ForEachNode::evaluate(Program& program)
 
 EvalResult BreakNode::evaluate(Program& program)
 {
+	// Note: Break stops execution of the block AND the loop
 	EvalResult result;
 	result.should_break = true;
 	return result;
@@ -156,6 +186,7 @@ EvalResult BreakNode::evaluate(Program& program)
 
 EvalResult ContinueNode::evaluate(Program& program)
 {
+	// Note: Continue stops execution the block BUT NOT the loop
 	EvalResult result;
 	result.should_continue = true;
 	return result;
@@ -163,9 +194,7 @@ EvalResult ContinueNode::evaluate(Program& program)
 
 EvalResult FunctionNode::evaluate(Program& program)
 {
-	auto result = this->body->evaluate(program);
-	result.should_return = false; // Reset return flag after function execution since we dont want to leave the outer context
-	return result;
+	return this->body->evaluate(program);
 }
 
 EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::string>& argValues)
@@ -193,6 +222,7 @@ EvalResult FunctionNode::callFunction(Program& program, const std::vector<std::s
 
 	// Evaluate function body in local program context with evaluate from FunctionNode
 	auto result = this->evaluate(frame);
+	result.should_return = false;
 	return result;
 }
 

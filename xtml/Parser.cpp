@@ -154,6 +154,14 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parseIncludeStatement(t);
 	}
 
+	if (t.type == TokenType::Keyword && t.value == "break") {
+		return parseBreakStatement(t);
+	}
+
+	if (t.type == TokenType::Keyword && t.value == "continue") {
+		return parseContinueStatement(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
@@ -501,6 +509,26 @@ std::unique_ptr<IncludeNode> Parser::parseIncludeStatement(const Token& token)
 		Utils::throw_err("Error: Expected ';' after include statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return includeNode;
+}
+
+std::unique_ptr<BreakNode> Parser::parseBreakStatement(const Token& token)
+{
+	get(); // Consume 'break' keyword
+	auto breakNode = std::make_unique<BreakNode>();
+	if (!match(TokenType::Symbol, ";")) {
+		Utils::throw_err("Error: Expected ';' after break statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	return breakNode;
+}
+
+std::unique_ptr<ContinueNode> Parser::parseContinueStatement(const Token& token)
+{
+	get(); // Consume 'continue' keyword
+	auto continueNode = std::make_unique<ContinueNode>();
+	if (!match(TokenType::Symbol, ";")) {
+		Utils::throw_err("Error: Expected ';' after continue statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	return continueNode;
 }
 
 std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)
