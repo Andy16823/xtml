@@ -187,6 +187,10 @@ std::unique_ptr<StmtNode> Parser::parseStatement()
 		return parsePrintStatement(t);
 	}
 
+	if (t.type == TokenType::Operator && t.value == "//") {
+		return parseCommentNode(t);
+	}
+
 	if (t.type == TokenType::Identifier) {
 		return parseExprStatement(t);
 	}
@@ -607,6 +611,17 @@ std::unique_ptr<PrintNode> Parser::parsePrintStatement(const Token& token)
 		Utils::throwErr("Error: Expected ';' after print statement at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
 	}
 	return printNode;
+}
+
+std::unique_ptr<CommentNode> Parser::parseCommentNode(const Token& token)
+{
+	get(); // Consume comment token //
+	auto commentNode = std::make_unique<CommentNode>();
+	while (peek().type != TokenType::EndOfFile && peek().line == token.line) {
+		commentNode->content += get().value + " ";
+	}
+	commentNode->content = Utils::trim(commentNode->content);
+	return commentNode;
 }
 
 std::unique_ptr<ForNode> Parser::parseForStatement(const Token& token)

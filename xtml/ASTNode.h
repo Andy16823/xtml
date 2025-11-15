@@ -424,3 +424,9 @@ public:
 	std::vector<std::unique_ptr<ExprNode>> arguments;
 	EvalResult evaluate(Program& program) override;
 };
+
+class CommentNode : public StmtNode {
+public:
+	std::string content;
+	EvalResult evaluate(Program& program) override;
+};

@@ -285,7 +285,6 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 			Utils::throwErr("Error: Undefined variable: " + leftVar->name);
 		}
 		program.vars[leftVar->name].value = rightResult.value;
-		rightResult.output = ""; // No output for assignment
 		return rightResult; 
 	}
 
@@ -616,7 +615,10 @@ EvalResult PrintNode::evaluate(Program& program)
 
 EvalResult StmtExprNode::evaluate(Program& program)
 {
-	return statement->evaluate(program);
+	auto result = statement->evaluate(program);
+	result.value = result.output;
+	result.output = "";
+	return result;
 }
 
 EvalResult NativeFunctionCallNode::evaluate(Program& program)
@@ -635,4 +637,9 @@ EvalResult NativeFunctionCallNode::evaluate(Program& program)
 	EvalResult result;
 	result.value = value.value;
 	return result;
+}
+
+EvalResult CommentNode::evaluate(Program& program)
+{
+	return {}; // Comments produce no output and have no effect
 }

@@ -1,5 +1,5 @@
 ﻿  Parser.cpp
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(46,25): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(195,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(525,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(199,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(529,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
   xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Debug\xtml.exe
