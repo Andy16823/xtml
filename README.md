@@ -65,7 +65,12 @@ Processes `<input_file>` and outputs a fully rendered HTML file in the same dire
     var a = 15;
     var b = 7;
     var comparison = expr {
-        if (a > b) { "a is greater than b"; } else { "a is not greater than b"; }
+        if (a > b) { 
+            print("a is greater than b"); 
+        } 
+        else { 
+            print("a is not greater than b"); 
+        }
     };
 </xtml>
 
