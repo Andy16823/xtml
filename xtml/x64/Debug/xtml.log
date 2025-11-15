@@ -1,40 +1,8 @@
 ﻿  ASTNode.cpp
   Core.cpp
-  FunctionRegistry.cpp
-  ModuleStd.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244: "=": Konvertierung von "_Rep" in "unsigned int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         with
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         [
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:             _Rep=__int64
-C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         ]
   Parser.cpp
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(46,25): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
-  Statements.cpp
-  Utils.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(16,12): warning C4834: Rückgabewert der Funktion mit [[nodiscard]]-Attribut wird verworfen
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244: "Initialisierung": Konvertierung von "_Rep" in "int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:         with
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:         [
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:             _Rep=__int64
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:         ]
-  Vars.cpp
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(318,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(319,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(353,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(360,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
-  xtml.cpp
   Code wird generiert...
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(117,1): warning C4715: "Vars::binaryOperation": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(127,1): warning C4715: "Vars::stringOperation": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(95,1): warning C4715: "Vars::evalFuncExpr": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(63,1): warning C4715: "Vars::evalFuncExpr": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(178,1): warning C4715: "Vars::numericOperation": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(215,1): warning C4715: "Vars::compareOperation": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(261,1): warning C4715: "Vars::compareNumbers": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(272,1): warning C4715: "Vars::compareBooleans": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(238,1): warning C4715: "Vars::compareStrings": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(196,1): warning C4715: "Vars::booleanOperation": Nicht alle Codepfade geben einen Wert zurück.
-C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(294,1): warning C4715: "Vars::unaryOperation": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(199,1): warning C4715: "Parser::parseStatement": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(529,1): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
 C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(487,1): warning C4715: "UnaryExprNode::evaluate": Nicht alle Codepfade geben einen Wert zurück.

@@ -17,7 +17,7 @@ EvalResult ASTNode::merge_results(const EvalResult& a, const EvalResult& b, bool
 {
 	EvalResult result;
 	if (mergeContent) {
-		result.value = a.value + b.value;
+		result.evaluated = a.evaluated + b.evaluated;
 	}
 	result.output = a.output + b.output;
 
@@ -46,7 +46,7 @@ EvalResult VarDeclNode::evaluate(Program& program)
 
 	// Evaluate the expression and assign to variable
 	EvalResult eval = expression->evaluate(program);
-	program.vars[name] = eval.value;
+	program.vars[name] = eval.evaluated;
 
 	// No output for variable declaration
 	return {};
@@ -90,7 +90,7 @@ EvalResult IfStatementNode::evaluate(Program& program)
 
 	// Try if condition
 	auto condResult = condition->evaluate(program);
-	if(condResult.value.value == "true") {
+	if(condResult.evaluated.value == "true") {
 		result = body->evaluate(program);
 		return result;
 	}
@@ -98,7 +98,7 @@ EvalResult IfStatementNode::evaluate(Program& program)
 	// Try else ifs
 	for (auto& elseif : elseIfs) {
 		auto elseIfresult = elseif->condition->evaluate(program);
-		if (elseIfresult.value.value == "true") {
+		if (elseIfresult.evaluated.value == "true") {
 			result = elseif->body->evaluate(program);
 			return result; // Return because else if was executed
 		}
@@ -116,7 +116,7 @@ EvalResult TextNode::evaluate(Program& program)
 	EvalResult result;
 	auto value = Vars::evalExpr(m_value, program.vars);
 	if (value.type != DT_UNKNOWN) {
-		result.value.value = value.value;
+		result.evaluated.value = value.value;
 	}
 	return result;
 }
@@ -126,7 +126,7 @@ EvalResult WhileNode::evaluate(Program& program)
 	EvalResult result;
 
 	auto condResult = condition->evaluate(program);
-	auto cond = Utils::toBool(condResult.value.value);
+	auto cond = Utils::toBool(condResult.evaluated.value);
 	while (cond) {
 		// Evaluate body
 		auto bodyResult = this->body->evaluate(program);
@@ -144,14 +144,14 @@ EvalResult WhileNode::evaluate(Program& program)
 			result = merge_results(result, bodyResult);
 			// Re-evaluate condition
 			condResult = condition->evaluate(program);
-			cond = Utils::toBool(condResult.value.value);
+			cond = Utils::toBool(condResult.evaluated.value);
 			continue;
 		}
 
 		// Normal execution
 		result = merge_results(result, bodyResult);
 		condResult = condition->evaluate(program);
-		cond = Utils::toBool(condResult.value.value);
+		cond = Utils::toBool(condResult.evaluated.value);
 	}
 
 	return result;
@@ -171,7 +171,7 @@ EvalResult ForNode::evaluate(Program& program)
 
 	// Evaluate condition
 	auto condResult = condition->evaluate(program);
-	while (condResult.value.value == "true") {
+	while (condResult.evaluated.value == "true") {
 		auto bodyResult = body->evaluate(program);
 
 		// Handle break, we exit the loop
@@ -281,7 +281,7 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 		if(program.vars.find(leftVar->name) == program.vars.end()) {
 			Utils::throwErr("Error: Undefined variable: " + leftVar->name);
 		}
-		program.vars[leftVar->name] = rightResult.value;
+		program.vars[leftVar->name] = rightResult.evaluated;
 		return rightResult; 
 	}
 
@@ -290,31 +290,31 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 		if (op == "&&") {
 			auto leftresult = left->evaluate(program);
 			// Short-circuit evaluation
-			if (leftresult.value.value == "false") {
-				result.value = {"false", DT_BOOL};
+			if (leftresult.evaluated.value == "false") {
+				result.evaluated = {"false", DT_BOOL};
 				return result;
 			}
 			auto rightresult = right->evaluate(program);
-			if (rightresult.value.value == "false") {
-				result.value = {"false", DT_BOOL};
+			if (rightresult.evaluated.value == "false") {
+				result.evaluated = {"false", DT_BOOL};
 				return result;
 			}
-			result.value = { "true", DT_BOOL };
+			result.evaluated = { "true", DT_BOOL };
 			return result;
 		}
 		if (op == "||") {
 			auto leftresult = left->evaluate(program);
 			// Short-circuit evaluation
-			if (leftresult.value.value == "true") {
-				result.value = {"true", DT_BOOL};
+			if (leftresult.evaluated.value == "true") {
+				result.evaluated = {"true", DT_BOOL};
 				return result;
 			}
 			auto rightresult = right->evaluate(program);
-			if (rightresult.value.value == "true") {
-				result.value = {"true", DT_BOOL};
+			if (rightresult.evaluated.value == "true") {
+				result.evaluated = {"true", DT_BOOL};
 				return result;
 			}
-			result.value = {"false", DT_BOOL};
+			result.evaluated = {"false", DT_BOOL};
 			return result;
 		}
 	}
@@ -324,39 +324,39 @@ EvalResult BinaryExprNode::evaluate(Program& program)
 	auto rightResult = right->evaluate(program);
 
 	if (optype == BinaryOpType::Comparison) {
-		bool cmpResult = Vars::compareOperation(leftResult.value, rightResult.value, op);
+		bool cmpResult = Vars::compareOperation(leftResult.evaluated, rightResult.evaluated, op);
 		if (cmpResult) {
-			result.value = {"true", DT_BOOL};
+			result.evaluated = {"true", DT_BOOL};
 		}
 		else {
-			result.value = { "false", DT_BOOL };
+			result.evaluated = { "false", DT_BOOL };
 		}
 		return result;
 	}	
 
 	// Return result
-	result.value = Vars::binaryOperation(leftResult.value, rightResult.value, op);
+	result.evaluated = Vars::binaryOperation(leftResult.evaluated, rightResult.evaluated, op);
 	return result;
 }
 
 EvalResult IntegerLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
-	result.value = {std::to_string(value), DT_NUMBER};
+	result.evaluated = {std::to_string(value), DT_NUMBER};
 	return result;
 }
 
 EvalResult StringLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
-	result.value = {value, DT_STRING};
+	result.evaluated = {value, DT_STRING};
 	return result;
 }
 
 EvalResult FloatLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
-	result.value = {std::to_string(value), DT_NUMBER};
+	result.evaluated = {std::to_string(value), DT_NUMBER};
 	return result;
 }
 
@@ -364,10 +364,10 @@ EvalResult BoolLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
 	if (value) {
-		result.value = { "true", DT_BOOL };
+		result.evaluated = { "true", DT_BOOL };
 	}
 	else {
-		result.value = { "false", DT_BOOL };
+		result.evaluated = { "false", DT_BOOL };
 	}
 	return result;
 }
@@ -375,7 +375,7 @@ EvalResult BoolLiteralNode::evaluate(Program& program)
 EvalResult DoubleLiteralNode::evaluate(Program& program)
 {
 	EvalResult result;
-	result.value = { std::to_string(value), DT_NUMBER };
+	result.evaluated = { std::to_string(value), DT_NUMBER };
 	return result;
 }
 
@@ -383,7 +383,7 @@ EvalResult VarExprNode::evaluate(Program& program)
 {
 	EvalResult result;
 	if(program.vars.find(this->name) != program.vars.end()) {
-		result.value = program.vars[this->name];
+		result.evaluated = program.vars[this->name];
 	}
 	else {
 		Utils::throwErr("Error: Undefined variable: " + this->name);
@@ -424,13 +424,13 @@ EvalResult HtmlStmtNode::evaluate(Program& program)
 		out << ">";
 		for (auto& child : this->children) {
 			EvalResult childResult = child->evaluate(program);
-			out << childResult.value.value;
+			out << childResult.evaluated.value;
 		}
 		out << "</" << tagName << ">";
 	}
 
 	EvalResult result;
-	result.value = { out.str(), DT_STRING };
+	result.evaluated = { out.str(), DT_STRING };
 	return result;
 }
 
@@ -444,7 +444,7 @@ EvalResult HtmlStmtRootNode::evaluate(Program& program)
 EvalResult HtmlTextNode::evaluate(Program& program)
 {
 	EvalResult result;
-	result.value = { content, DT_STRING };
+	result.evaluated = { content, DT_STRING };
 	return result;
 }
 
@@ -468,10 +468,10 @@ EvalResult UnaryExprNode::evaluate(Program& program)
 		EvalResult result;
 
 		if (this->isPrefix) {
-			result.value = value;
+			result.evaluated = value;
 		}
 		else {
-			result.value = operandResult.value;
+			result.evaluated = operandResult.evaluated;
 		}
 		return result;
 	}
@@ -481,7 +481,7 @@ EvalResult UnaryExprNode::evaluate(Program& program)
 		var varRef = { std::to_string(intlit->value), DT_NUMBER };
 		auto value = Vars::unaryOperation(varRef, op);
 		EvalResult result;
-		result.value = value;
+		result.evaluated = value;
 		return result;
 	}
 }
@@ -524,7 +524,7 @@ EvalResult FunctionCallNode::evaluate(Program& program)
 	std::vector<std::string> argValues;
 	for (auto& arg : arguments) {
 		auto argResult = arg->evaluate(program);
-		argValues.push_back(argResult.value.value);
+		argValues.push_back(argResult.evaluated.value);
 	}
 	return function->callFunction(program, argValues);
 }
@@ -600,8 +600,8 @@ EvalResult HtmlBlockNode::evaluate(Program& program)
 	for(auto& child : children) {
 		result = merge_results(result, child->evaluate(program), true); // True to merge content
 	}
-	result.value.value = Core::resolvePlaceholders(result.value.value, program.vars); // Resolve any remaining placeholders
-	result.output = result.value.value;	// For HTML blocks, printed output is the same as content
+	result.evaluated.value = Core::resolvePlaceholders(result.evaluated.value, program.vars); // Resolve any remaining placeholders
+	result.output = result.evaluated.value;	// For HTML blocks, printed output is the same as content
 	return result;
 }
 
@@ -609,14 +609,14 @@ EvalResult PrintNode::evaluate(Program& program)
 {
 	EvalResult result;
 	auto exprResult = expression->evaluate(program);
-	result.output = exprResult.value.value;
+	result.output = exprResult.evaluated.value;
 	return result;
 }
 
 EvalResult StmtExprNode::evaluate(Program& program)
 {
 	auto result = statement->evaluate(program);
-	result.value = {result.output, DT_STRING};
+	result.evaluated = {result.output, DT_STRING};
 	result.output = "";
 	return result;
 }
@@ -627,7 +627,7 @@ EvalResult NativeFunctionCallNode::evaluate(Program& program)
 	std::vector<var> args;
 	for (auto& arg : arguments) {
 		auto argResult = arg->evaluate(program);
-		args.push_back(argResult.value);
+		args.push_back(argResult.evaluated);
 	}
 	
 	// Call native function
@@ -635,7 +635,7 @@ EvalResult NativeFunctionCallNode::evaluate(Program& program)
 
 	// Return result
 	EvalResult result;
-	result.value = value;
+	result.evaluated = value;
 	return result;
 }
 

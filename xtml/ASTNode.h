@@ -13,7 +13,7 @@
 /// Evaluation Result
 /// </summary>
 struct EvalResult {
-	var value; // The evaluated content TODO: rename to value?
+	var evaluated; // The evaluated content TODO: rename to value?
 	bool should_break = false; // For loop control
 	bool should_continue = false; // For loop control
 	bool should_return = false; // For function return control
