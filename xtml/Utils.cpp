@@ -9,22 +9,40 @@
 
 using namespace std;
 
-bool Utils::is_number(const std::string& s)
+bool Utils::isNumber(const std::string& s)
 {
-	return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+	try {
+		size_t pos;
+		std::stoi(s, &pos);
+
+		// pos == Länge ? gesamte Zeichenkette ist eine Zahl
+		return pos == s.length();
+	}
+	catch (...) {
+		return false;
+	}
 }
 
-bool Utils::is_alpha(const std::string& s)
+bool Utils::isAlpha(const std::string& s)
 {
 	return !s.empty() && std::all_of(s.begin(), s.end(), ::isalpha);
 }
 
-bool Utils::is_string(const std::string& s)
+bool Utils::isString(const std::string& s)
 {
-	return !s.empty() && s.front() == '"' && s.back() == '"';
+	if (s.size() < 2 || s.front() != '"') return false;
+
+	// Prüfe, ob das letzte Zeichen ein " ist, das nicht escaped ist
+	size_t backIndex = s.size() - 1;
+	size_t escapeCount = 0;
+	while (backIndex > 0 && s[backIndex - 1 - escapeCount] == '\\') {
+		escapeCount++;
+	}
+
+	return s.back() == '"' && (escapeCount % 2 == 0);
 }
 
-bool Utils::is_bool(const std::string& s)
+bool Utils::isBool(const std::string& s)
 {
 	if (s == "true" || s == "false" || s == "1" || s == "0") {
 		return true;
@@ -32,17 +50,17 @@ bool Utils::is_bool(const std::string& s)
 	return false;
 }
 
-void Utils::print_ln(const std::string& str)
+void Utils::printLn(const std::string& str)
 {
 	std::cout << str << std::endl;
 }
 
-void Utils::printerr_ln(const std::string& str)
+void Utils::printerrLn(const std::string& str)
 {
 	std::cerr << str << std::endl;
 }
 
-void Utils::throw_err(const std::string& str, const std::string& stack_trace)
+void Utils::throwErr(const std::string& str, const std::string& stack_trace)
 {	
 	const std::string red = "\033[31m";
 	const std::string reset = "\033[0m";
@@ -57,7 +75,7 @@ void Utils::throw_err(const std::string& str, const std::string& stack_trace)
 	throw std::runtime_error(str);
 }
 
-std::string Utils::escape_str(const std::string& str)
+std::string Utils::escapeStr(const std::string& str)
 {
 	std::string result = str;
 	result = Utils::replace(result, "\\n", "\n");
@@ -67,21 +85,21 @@ std::string Utils::escape_str(const std::string& str)
 	return result;
 }
 
-std::string Utils::file_name(const std::string& file_path)
+std::string Utils::fileName(const std::string& file_path)
 {
 	size_t last_slash = file_path.find_last_of("/\\");
 	if (last_slash == std::string::npos) return file_path;
 	return file_path.substr(last_slash + 1);
 }
 
-std::string Utils::file_name_no_ext(const std::string& file_name)
+std::string Utils::fileNameNoExt(const std::string& file_name)
 {
 	size_t last_dot = file_name.find_last_of('.');
 	if (last_dot == std::string::npos) return file_name;
 	return file_name.substr(0, last_dot);
 }
 
-std::string Utils::file_path_parent(const std::string& file_path)
+std::string Utils::filePathParent(const std::string& file_path)
 {
 	size_t last_slash = file_path.find_last_of("/\\");
 	if (last_slash != std::string::npos)
@@ -97,7 +115,7 @@ std::string Utils::trim(const std::string& str)
 	return str.substr(first, (last - first + 1));
 }
 
-std::string Utils::trim_quotes(const std::string& str)
+std::string Utils::trimQuotes(const std::string& str)
 {
 	if (str.size() >= 2 && str.front() == '"' && str.back() == '"') {
 		return str.substr(1, str.size() - 2);
@@ -105,7 +123,7 @@ std::string Utils::trim_quotes(const std::string& str)
 	return str;
 }
 
-std::string Utils::read_file(const std::string& filename)
+std::string Utils::readFile(const std::string& filename)
 {
 	std::ifstream file(filename); // Ensure std::ifstream is included  
 	if (!file.is_open()) {
@@ -116,7 +134,7 @@ std::string Utils::read_file(const std::string& filename)
 	return buffer.str();
 }
 
-std::string Utils::replace_whitespace(const std::string& str, char replacement)
+std::string Utils::replaceWhitespace(const std::string& str, char replacement)
 {
 	std::string result = str;
 	std::replace_if(result.begin(), result.end(), ::isspace, replacement);
@@ -148,7 +166,7 @@ std::string Utils::replace(const std::string& str, const std::string& from, cons
 	return result;
 }
 
-bool Utils::starts_with(const std::string& str, const std::string& prefix)
+bool Utils::startsWith(const std::string& str, const std::string& prefix)
 {
 	if (str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0) {
 		return true;
@@ -156,7 +174,7 @@ bool Utils::starts_with(const std::string& str, const std::string& prefix)
 	return false;
 }
 
-bool Utils::ends_with(const std::string& str, const std::string& suffix)
+bool Utils::endsWith(const std::string& str, const std::string& suffix)
 {
 	if (str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0) {
 		return true;
@@ -164,7 +182,7 @@ bool Utils::ends_with(const std::string& str, const std::string& suffix)
 	return false;
 }
 
-bool Utils::is_path_absolute(const std::string& path)
+bool Utils::isAbsolute(const std::string& path)
 {
 	if (path.size() >= 2 && std::isalpha(path[0]) && path[1] == ':') {
 		return true; // Windows absolute path (e.g., C:\)
@@ -172,7 +190,7 @@ bool Utils::is_path_absolute(const std::string& path)
 	return false;
 }
 
-std::string Utils::generate_uuid()
+std::string Utils::generateUuid()
 {
 	int seed = std::chrono::steady_clock::now().time_since_epoch().count();
 	static std::mt19937 rng(seed);
@@ -194,7 +212,27 @@ std::string Utils::generate_uuid()
 	return result;
 }
 
-std::string Utils::parse_parantheses(const std::string& str)
+DataType Utils::predictVarType(const std::string& value)
+{
+	// TODO: Improve type prediction (e.g., arrays, etc.)
+	if (Utils::isNumber(value)) {
+		return DT_NUMBER;
+	}
+	else if (Utils::isBool(value)) {
+		return DT_BOOL;
+	}
+	return DT_STRING; // Default to string
+}
+
+bool Utils::toBool(const std::string& value)
+{
+	if (value == "true" || value == "1") {
+		return true;
+	}
+	return false;
+}
+
+std::string Utils::parseParantheses(const std::string& str)
 {
 	string current;
 	bool in_quotes = false;

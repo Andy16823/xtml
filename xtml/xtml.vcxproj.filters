@@ -42,6 +42,12 @@
     <ClCompile Include="ASTNode.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Lexer.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
@@ -72,6 +78,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="ASTNode.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Lexer.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

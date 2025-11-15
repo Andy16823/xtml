@@ -60,23 +60,24 @@ std::string getExeDir() {
 void action_build(const std::string& file_path) {
 
 	std::string path = file_path;
-	if (Utils::is_path_absolute(path) == false) {
+	if (Utils::isAbsolute(path) == false) {
 		auto current_path = fs::current_path().string();
 		path = current_path + "\\" + file_path;
 	}
 
 	// Get the raw file name
-	auto file_name = Utils::file_name(path);
-	file_name = Utils::file_name_no_ext(file_name) + ".html";
+	auto file_name = Utils::fileName(path);
+	file_name = Utils::fileNameNoExt(file_name) + ".html";
 
 	// Get the file directory
-	auto file_dir = Utils::file_path_parent(path);
+	auto file_dir = Utils::filePathParent(path);
 	auto output_path = file_dir + "\\" + file_name;
 
 	// Build the file and write to output
 	std::map<std::string, var> vars;
-	auto content = Core::build_file(path, vars);
-	Core::write_file(content, output_path);
+	//auto content = Core::build_file(path, vars);
+	auto content = Core::buildFile(path); // New AST-based builder (not finished yet)
+	Core::writeFile(content, output_path);
 }
 
 int main(int argc, char* argv[])  
@@ -94,14 +95,14 @@ int main(int argc, char* argv[])
 	
 
 	if (argc < 2) {  
-		Utils::printerr_ln("Usage: <command> <file_path>");
+		Utils::printerrLn("Usage: <command> <file_path>");
 		return 1;  
 	}  
 
 	std::string command = argv[1];
 
 	if (command == "version") {
-		Utils::print_ln(std::string("xtml version: ") + VERSION);
+		Utils::printLn(std::string("xtml version: ") + VERSION);
 		return 0;
 	}
 	else if (command == "build") {

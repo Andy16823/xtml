@@ -50,7 +50,7 @@ std::vector<std::string> Statements::split_conditions(const std::string& conditi
 	// Step 2: Remove surrounding parentheses from each condition
 	for (auto& cond : conditions) {
 		if (cond.front() == '(' && cond.back() == ')') {
-			cond = Utils::trim(Utils::parse_parantheses(cond));
+			cond = Utils::trim(Utils::parseParantheses(cond));
 		}
 	}
 
@@ -155,7 +155,7 @@ bool Statements::resolve_conditions(const std::vector<std::string>& conditions, 
 {
 	if (conditions.empty()) return false;
 	if (conditions.size() != ops.size() + 1) {
-		Utils::throw_err("Error: Mismatched conditions and operators.");
+		Utils::throwErr("Error: Mismatched conditions and operators.");
 		return false;
 	}
 	std::vector<bool> cond_results;
@@ -199,24 +199,24 @@ bool Statements::resolve_condition(const std::string& condition, const std::map<
 		return resolve_conditions(conds, cond_ops, vars);
 	}
 
-	left = Vars::eval_expr(tokens[0], vars);
-	right = Vars::eval_expr(tokens[2], vars);
+	left = Vars::evalExpr(tokens[0], vars);
+	right = Vars::evalExpr(tokens[2], vars);
 	std::string op = tokens[1];
 
 	if (left.type == DT_UNKNOWN || right.type == DT_UNKNOWN) {
-		Utils::throw_err("Error: Unknown variable in condition: " + condition);
+		Utils::throwErr("Error: Unknown variable in condition: " + condition);
 		return false;
 	}
 
 	if (left.type != right.type) {
-		Utils::throw_err("Error: Type mismatch in condition: " + condition);
+		Utils::throwErr("Error: Type mismatch in condition: " + condition);
 		return false;
 	}
 
 	if (left.type == DT_STRING) {
 		if (op == "==") return left.value == right.value;
 		if (op == "!=") return left.value != right.value;
-		Utils::throw_err("Error: Invalid operator for string comparison: " + op);
+		Utils::throwErr("Error: Invalid operator for string comparison: " + op);
 		return false;
 	}
 	else if (left.type == DT_NUMBER) {
@@ -228,7 +228,7 @@ bool Statements::resolve_condition(const std::string& condition, const std::map<
 		if (op == "<=") return left_num <= right_num;
 		if (op == ">") return left_num > right_num;
 		if (op == ">=") return left_num >= right_num;
-		Utils::throw_err("Error: Invalid operator for numeric comparison: " + op);
+		Utils::throwErr("Error: Invalid operator for numeric comparison: " + op);
 		return false;
 	}
 	else if (left.type == DT_BOOL) {
@@ -236,7 +236,7 @@ bool Statements::resolve_condition(const std::string& condition, const std::map<
 		bool right_bool = (right.value == "true");
 		if (op == "==") return left_bool == right_bool;
 		if (op == "!=") return left_bool != right_bool;
-		Utils::throw_err("Error: Invalid operator for boolean comparison: " + op);
+		Utils::throwErr("Error: Invalid operator for boolean comparison: " + op);
 		return false;
 	}
 
@@ -248,7 +248,7 @@ bool Statements::evaluate_condition(const std::string& condition_str, const std:
 {
 	auto condition = Utils::trim(condition_str);
 	if (condition.empty()) {
-		Utils::throw_err("Error: Empty condition in if statement.");
+		Utils::throwErr("Error: Empty condition in if statement.");
 		return false;
 	}
 

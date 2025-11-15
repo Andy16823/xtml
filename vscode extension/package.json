@@ -1,0 +1,26 @@
+{
+  "name": "xtml-syntax",
+  "displayName": "XTML Syntax",
+  "description": "Syntax highlighting for XTML",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "xtml",
+        "aliases": ["XTML", "xtml"],
+        "extensions": [".xtml"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "xtml",
+        "scopeName": "source.xtml",
+        "path": "./syntaxes/xtml.tmLanguage.json"
+      }
+    ]
+  }
+}
