@@ -205,6 +205,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>:: Header- und Include-Verzeichnisse bereinigen
+rmdir /S /Q "$(OutDir)include\xtml"
+
+:: Header-Dateien kopieren
+xcopy /S /Y /I "$(ProjectDir)*.h" "$(OutDir)include\xtml"
+xcopy /S /Y /I "$(ProjectDir)*.hpp" "$(OutDir)include\xtml"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -239,6 +247,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>:: Header- und Include-Verzeichnisse bereinigen
+rmdir /S /Q "$(OutDir)include\xtml"
+
+:: Header-Dateien kopieren
+xcopy /S /Y /I "$(ProjectDir)*.h" "$(OutDir)include\xtml"
+xcopy /S /Y /I "$(ProjectDir)*.hpp" "$(OutDir)include\xtml"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ASTNode.cpp" />
