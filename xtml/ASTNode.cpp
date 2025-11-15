@@ -9,6 +9,7 @@
 #include <sstream>
 #include "Lexer.h"
 #include "Parser.h"
+#include "Globals.h"
 
 using namespace std;
 
@@ -616,4 +617,22 @@ EvalResult PrintNode::evaluate(Program& program)
 EvalResult StmtExprNode::evaluate(Program& program)
 {
 	return statement->evaluate(program);
+}
+
+EvalResult NativeFunctionCallNode::evaluate(Program& program)
+{
+	// Build arguments
+	std::vector<var> args;
+	for (auto& arg : arguments) {
+		auto argResult = arg->evaluate(program);
+		args.push_back({argResult.value, Utils::predictVarType(argResult.value)});
+	}
+	
+	// Call native function
+	var value = g_functionRegistry.CallFunction(this->namespaceName, this->functionName, args);
+
+	// Return result
+	EvalResult result;
+	result.value = value.value;
+	return result;
 }

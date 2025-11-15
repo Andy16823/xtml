@@ -39,6 +39,23 @@ bool Parser::match(TokenType type, std::string value)
 	return false;
 }
 
+bool Parser::match(TokenType type, std::string value, size_t range)
+{
+	std::string tvalues;
+	for (size_t i = 0; i < range; i++) {
+		const Token& t = peek(i); 
+		tvalues += t.value;
+		if (t.type != type) {
+			return false;
+		}
+	}
+	if(tvalues != value) {
+		return false;
+	}
+	m_pos += range;
+	return true;
+}
+
 std::unique_ptr<XtmlBlockNode> Parser::parse()
 {
 	// Toplevel parse block since we dont start with functions
@@ -248,6 +265,11 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 	// Case true/false
 	if (t.type == TokenType::Identifier && (t.value == "true" || t.value == "false")) {
 		return std::make_unique<BoolLiteralNode>(t.value == "true");
+	}
+
+	// Case native function call native std::foo(10)
+	if (t.type == TokenType::Keyword && t.value == "native") {
+		return this->parseNativeFunctionCall(t);
 	}
 
 	// Case variable or function call
@@ -623,4 +645,38 @@ std::unique_ptr<WhileNode> Parser::parseWhileStatement(const Token& token)
 	}
 	whileNode->body = parseBracketBlock();
 	return whileNode;
+}
+
+std::unique_ptr<NativeFunctionCallNode> Parser::parseNativeFunctionCall(const Token& token)
+{
+	auto nativeCall = std::make_unique<NativeFunctionCallNode>();
+	nativeCall->namespaceName = get().value; // Get namespace
+	if (!match(TokenType::Symbol, "::", 2)) {
+		Utils::throwErr("Error: Expected '::' after native namespace at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	nativeCall->functionName = get().value; // Get function name
+	if (!match(TokenType::Symbol, "(")) {
+		Utils::throwErr("Error: Expected '(' after native function name at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+	}
+	while (true) {
+		// Early EOF check
+		if (peek().type == TokenType::EndOfFile) {
+			Utils::throwErr("Error: Unexpected end of file while parsing native function arguments at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+
+		// Parse the argument expression
+		auto expr = parseExpression();
+		if (expr != nullptr) {
+			nativeCall->arguments.push_back(std::move(expr));
+		}
+
+		// Check for ',' or ')'
+		if (!match(TokenType::Symbol, ",")) {
+			if (!match(TokenType::Symbol, ")")) {
+				Utils::throwErr("Error: Expected ')' after native function arguments at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			}
+			break;
+		}
+	}
+	return nativeCall;
 }

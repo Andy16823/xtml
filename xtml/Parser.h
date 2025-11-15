@@ -15,6 +15,7 @@ private:
 	Token& peek(int offset);
 	Token& get();
 	bool match(TokenType type, std::string value);
+	bool match(TokenType type, std::string value, size_t range);
 
 public:
 	Parser(const std::vector<Token>& tokens)  	: m_tokens(tokens), m_pos(0) {
@@ -45,5 +46,8 @@ public:
 	// Loops
 	std::unique_ptr<ForNode> parseForStatement(const Token& token); // Parse for loops
 	std::unique_ptr<WhileNode> parseWhileStatement(const Token& token); // Parse while loops
+
+	// Primarys
+	std::unique_ptr<NativeFunctionCallNode> parseNativeFunctionCall(const Token& token); // Parse native function calls
 };
 

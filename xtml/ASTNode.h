@@ -416,3 +416,11 @@ public:
 	StmtExprNode() = default;
 	EvalResult evaluate(Program& program) override;
 };
+
+class NativeFunctionCallNode : public ExprNode {
+public:
+	std::string namespaceName;
+	std::string functionName;
+	std::vector<std::unique_ptr<ExprNode>> arguments;
+	EvalResult evaluate(Program& program) override;
+};

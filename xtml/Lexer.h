@@ -60,7 +60,8 @@ private:
 		"print",
 		"html",
 		"function",
-		"expr"
+		"expr",
+		"native"
 	};
 
 	std::unordered_set<std::string> operators = {
