@@ -50,5 +50,6 @@ public:
 
 	// Primarys
 	std::unique_ptr<NativeFunctionCallNode> parseNativeFunctionCall(const Token& token); // Parse native function calls
+	std::unique_ptr<ArrayLiteralNode> parseArrayLiteral(const Token& token); // Parse array literals
 };
 

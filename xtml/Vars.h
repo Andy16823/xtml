@@ -36,6 +36,14 @@ struct var {
 };
 
 /// <summary>
+/// Overloaded + operator for variables
+/// </summary>
+/// <param name="lhs"></param>
+/// <param name="rhs"></param>
+/// <returns></returns>
+var operator+(const var& lhs, const var& rhs);
+
+/// <summary>
 /// Variable Utilities
 /// </summary>
 class Vars  
