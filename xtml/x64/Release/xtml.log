@@ -1,12 +1,37 @@
-﻿  Core.cpp
+﻿  ASTNode.cpp
+  Core.cpp
   FunctionRegistry.cpp
   Include.cpp
+  Lexer.cpp
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Lexer.cpp(23,16): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Lexer.cpp(63,17): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
   ModuleStd.cpp
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244: "=": Konvertierung von "_Rep" in "unsigned int", möglicher Datenverlust
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         with
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         [
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:             _Rep=__int64
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ModuleStd.cpp(146,68): warning C4244:         ]
+  Parser.cpp
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(46,25): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
+  Statements.cpp
   Utils.cpp
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(16,12): warning C4834: Rückgabewert der Funktion mit [[nodiscard]]-Attribut wird verworfen
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244: "Initialisierung": Konvertierung von "_Rep" in "int", möglicher Datenverlust
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:         with
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:         [
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:             _Rep=__int64
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Utils.cpp(195,11): warning C4244:         ]
   Vars.cpp
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(318,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(319,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(353,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Vars.cpp(360,9): warning C4244: "Initialisierung": Konvertierung von "__int64" in "int", möglicher Datenverlust
   xtml.cpp
   Code wird generiert.
-  Previous IPDB not found, fall back to full compilation.
-  All 2565 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Previous IPDB was built with incompatible compiler, fall back to full compilation.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Lexer.cpp(131): warning C4715: "Lexer::number": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\ASTNode.cpp(487): warning C4715: "UnaryExprNode::evaluate": Nicht alle Codepfade geben einen Wert zurück.
+C:\Users\andy1\Documents\GitHub\xtml\xtml\Parser.cpp(533): warning C4715: "Parser::parseHtmlStatement": Nicht alle Codepfade geben einen Wert zurück.
+  All 3814 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Codegenerierung ist abgeschlossen.
-  xtml.vcxproj -> C:\Users\andy1\source\repos\xtml\x64\Release\xtml.exe
+  xtml.vcxproj -> C:\Users\andy1\Documents\GitHub\xtml\x64\Release\xtml.exe
