@@ -1,31 +1,51 @@
 # XTML
 
-**XTML** is a C++ utility for processing custom markup templates and generating HTML files. It allows you to define variables, evaluate expressions, and include modular content, making HTML generation dynamic and flexible.
+**XTML** is a C++ utility and DSL for generating dynamic HTML content from templates. It allows you to define variables, evaluate expressions, include external files, and embed logic directly into your HTML templates, providing a flexible workflow for generating web pages.
 
 ---
 
 ## Features
 
-* **Variable Parsing & Substitution**: Define variables with `@var` and use placeholders `{{@varname}}` in your templates.
-* **Conditional Logic**: Use `@if`, `@else if`, and `@else` for dynamic content generation based on variable values.
-* **Block Processing**: Detects and evaluates `<xtml>...</xtml>` blocks for preprocessing content.
-* **Expression Evaluation**: Supports numeric and string expressions, including concatenation and math operations.
-* **Includes & Modularity**: Include external files and pass variables to them for reusable templates.
-* **Content Cleanup**: Strips comments and trims unnecessary whitespace.
-* **File Utilities**: Provides helper functions for reading, writing, and manipulating files and paths.
-* **Module / DLL Support**: Extend XTML with custom C++ functions loaded dynamically via DLLs.
+* **Variables and Placeholders**
+  Define variables using `var` and reference them with `{{@varName}}` in your templates.
+
+* **Functions and Expressions**
+  Create user-defined functions, return values, and evaluate expressions (numeric, string, or HTML).
+
+* **Control Flow**
+  Supports `if`, `else if`, `else`, `while`, and `for` loops with `break` and `continue`.
+
+* **HTML Integration**
+  Embed HTML directly using `<xtml>` blocks and render dynamic content with expressions.
+
+* **Static Definitions**
+  Use `xtmldef` to define reusable static content blocks.
+
+* **Native Functions**
+  Access built-in functions such as `std::randStr` and `std::get` for arrays.
+
+* **Arrays and Data Types**
+  Work with arrays and mixed data types consistently.
+
+* **Modular Templates**
+  Include external XTML files for reusable template logic.
+
+* **Output Handling**
+  Distinguishes between captured printed output and returned values for clean template rendering.
 
 ---
 
 ## Usage
 
-Build the project using your preferred C++ toolchain. The main executable supports the following commands:
+### Build the Project
+
+Compile the project using your preferred C++ toolchain. The main executable supports the following commands:
 
 ```sh
 xtml version
 ```
 
-Displays the current version of XTML.
+Displays the current XTML version.
 
 ```sh
 xtml build <input_file>
@@ -37,18 +57,16 @@ Processes `<input_file>` and outputs a fully rendered HTML file in the same dire
 
 ## Example Workflow
 
-1. Create a template file `template.xtml`:
+### Template (`template.xtml`)
 
 ```xtml
 <xtml>
-    @var title = "XTML Example Page";
-    @var num1 = 15;
-    @var num2 = 7;
-    @if (num1 > num2) {
-        @var comparison = "num1 is greater than num2";
-    } @else {
-        @var comparison = "num1 is not greater than num2";
-    }
+    var title = "XTML Example Page";
+    var a = 15;
+    var b = 7;
+    var comparison = expr {
+        if (a > b) { "a is greater than b"; } else { "a is not greater than b"; }
+    };
 </xtml>
 
 <html>
@@ -61,13 +79,13 @@ Processes `<input_file>` and outputs a fully rendered HTML file in the same dire
 </html>
 ```
 
-2. Build the HTML:
+### Build and Output
 
 ```sh
 xtml build template.xtml
 ```
 
-3. The output HTML file will be generated in the same folder:
+Output:
 
 ```html
 <html>
@@ -75,7 +93,7 @@ xtml build template.xtml
     <title>XTML Example Page</title>
 </head>
 <body>
-    <p>num1 is greater than num2</p>
+    <p>a is greater than b</p>
 </body>
 </html>
 ```
@@ -84,35 +102,29 @@ xtml build template.xtml
 
 ## Modules / DLL Extensions
 
-XTML supports extending functionality through dynamically loaded C++ modules (DLLs). This allows you to add custom functions, math operations, or other utilities that can be used inside XTML templates.
+Extend XTML functionality through dynamically loaded C++ modules (DLLs). This allows you to add custom functions usable directly in templates.
 
 ### Creating a Module
 
-1. Write a C++ shared library (DLL) exposing functions in the expected XTML API.
-2. Export functions using `extern "C"` to ensure proper linking.
-3. Place the compiled DLL in the `modules` folder of your XTML project.
+1. Write a C++ shared library (DLL) exposing functions in the XTML API.
+2. Export functions using `extern "C"` for proper linking.
+3. Place the compiled DLL in the `modules` folder of your project.
 
-### Using a Module in XTML
+### Using a Module
 
-Once the module is loaded, its functions can be used in expressions like any built-in function:
+Call module functions in templates like any built-in function:
 
 ```xtml
-@var num1 = 10;
-@var num2 = 5;
-@var sum = XtmlMath::add(num1, num2);
+var sum = MyMath::add(10, 5);
 ```
 
-Where `XtmlMath` is the name of your DLL module and `add` is an exported function.
-
-### Loading Modules
-
-Modules are automatically loaded at runtime when XTML encounters a call to a function in a module. You can also pre-load modules by specifying them in a configuration file (if implemented).
+Modules are loaded automatically when a function call is encountered, or they can be pre-loaded via a configuration.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+XTML is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
