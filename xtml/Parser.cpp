@@ -266,6 +266,10 @@ std::unique_ptr<ExprNode> Parser::parsePrimary()
 		return std::make_unique<DoubleLiteralNode>(std::stod(t.value));
 	}
 
+	if (t.type == TokenType::Symbol && t.value == "[") {
+		return this->parseArrayLiteral(t);
+	}
+
 	// Case true/false
 	if (t.type == TokenType::Identifier && (t.value == "true" || t.value == "false")) {
 		return std::make_unique<BoolLiteralNode>(t.value == "true");
@@ -694,4 +698,32 @@ std::unique_ptr<NativeFunctionCallNode> Parser::parseNativeFunctionCall(const To
 		}
 	}
 	return nativeCall;
+}
+
+std::unique_ptr<ArrayLiteralNode> Parser::parseArrayLiteral(const Token& token)
+{
+	auto arrayLiteral = std::make_unique<ArrayLiteralNode>();
+	while (true) {
+		// Early EOF check
+		if(peek().type == TokenType::EndOfFile) {
+			Utils::throwErr("Error: Unexpected end of file while parsing array literal at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+		}
+
+		// Parse the element expression
+		auto expr = parseExpression();
+		if (expr != nullptr) {
+			arrayLiteral->elements.push_back(std::move(expr));
+		}
+
+		// Check for ',' or ']'
+		if (!match(TokenType::Symbol, ",")) {
+			if (!match(TokenType::Symbol, "]")) {
+				Utils::throwErr("Error: Expected ',' or ']' in array literal at line " + std::to_string(token.line) + ", column " + std::to_string(token.column) + ".");
+			}
+			else {
+				break;
+			}
+		}
+	}
+	return arrayLiteral;
 }

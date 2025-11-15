@@ -646,5 +646,17 @@ EvalResult CommentNode::evaluate(Program& program)
 
 EvalResult ArrayLiteralNode::evaluate(Program& program)
 {
-	return {};
+	DataType datatype = DT_UNKNOWN;	// Type for the array elements
+	std::vector<var> arrayElements;
+	for (auto& element : elements) {
+		auto elementResult = element->evaluate(program);
+		if (datatype == DataType::DT_UNKNOWN) {
+			datatype = elementResult.evaluated.type;
+		}
+		if(elementResult.evaluated.type != datatype) {
+			Utils::throwErr("Error: Array elements must be of the same type.");
+		}
+		arrayElements.push_back(elementResult.evaluated);
+	}
+	return { "", DT_ARRAY, arrayElements };
 }

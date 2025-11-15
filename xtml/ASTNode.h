@@ -242,6 +242,7 @@ class DoubleLiteralNode : public ExprNode
 /// </summary>
 class ArrayLiteralNode : public ExprNode {
 public:
+	ArrayLiteralNode() = default;
 	std::vector<std::unique_ptr<ExprNode>> elements;
 	EvalResult evaluate(Program& program) override;
 };
