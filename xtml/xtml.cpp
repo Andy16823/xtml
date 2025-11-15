@@ -19,7 +19,7 @@
 #include <Windows.h>
 #include <filesystem>
 
-#define VERSION "0.0.0.1"
+#define VERSION "0.0.1.0"
 
 namespace fs = std::filesystem;
 

@@ -309,3 +309,70 @@ BinaryOpType Vars::getBinaryOpType(const std::string& op)
 	}
 	return BinaryOpType::Unknown;
 }
+
+var operator+(const var& lhs, const var& rhs)
+{
+	var result;
+
+	if (lhs.type == DT_NUMBER && rhs.type == DT_NUMBER) {
+		int l = std::stoll(lhs.value);
+		int r = std::stoll(rhs.value);
+		result.value = std::to_string(l + r);
+		result.type = DT_NUMBER;
+		return result;
+	}
+
+	if (lhs.type == DT_STRING && rhs.type == DT_STRING) {
+		result.value = lhs.value + rhs.value;
+		result.type = DT_STRING;
+		return result;
+	}
+
+	if (lhs.type == DT_STRING && rhs.type == DT_NUMBER) {
+		result.value = lhs.value + rhs.value;
+		result.type = DT_STRING;
+		return result;
+	}
+
+	if (lhs.type == DT_NUMBER && rhs.type == DT_STRING) {
+		result.value = lhs.value + rhs.value;
+		result.type = DT_STRING;
+		return result;
+	}
+
+	if (lhs.type == DT_BOOL && rhs.type == DT_BOOL) {
+		bool l = Utils::toBool(lhs.value);
+		bool r = Utils::toBool(rhs.value);
+		result.value = (l || r) ? "true" : "false";
+		result.type = DT_BOOL;
+		return result;
+	}
+
+	if (lhs.type == DT_BOOL && rhs.type == DT_NUMBER) {
+		bool l = Utils::toBool(lhs.value);
+		int r = std::stoll(rhs.value);
+		result.value = (l || r != 0) ? "true" : "false";
+		result.type = DT_BOOL;
+		return result;
+	}
+
+	if (lhs.type == DT_NUMBER && rhs.type == DT_BOOL) {
+		int l = std::stoll(lhs.value);
+		bool r = Utils::toBool(rhs.value);
+		result.value = (l != 0 || r) ? "true" : "false";
+		result.type = DT_BOOL;
+		return result;
+	}
+
+	if (lhs.type == DT_ARRAY && rhs.type == DT_ARRAY) {
+		result.array = lhs.array;
+		result.array.insert(result.array.end(), rhs.array.begin(), rhs.array.end());
+		result.type = DT_ARRAY;
+		return result;
+	}
+
+	// Fallback to string concatenation
+	result.value = lhs.value + rhs.value;
+	result.type = DT_STRING;
+	return result;
+}

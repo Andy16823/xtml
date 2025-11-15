@@ -13,7 +13,7 @@
 /// Evaluation Result
 /// </summary>
 struct EvalResult {
-	std::string value; // The evaluated content TODO: rename to value?
+	var value; // The evaluated content TODO: rename to value?
 	bool should_break = false; // For loop control
 	bool should_continue = false; // For loop control
 	bool should_return = false; // For function return control
@@ -238,6 +238,15 @@ class DoubleLiteralNode : public ExprNode
 };
 
 /// <summary>
+/// Array Literal Node
+/// </summary>
+class ArrayLiteralNode : public ExprNode {
+public:
+	std::vector<std::unique_ptr<ExprNode>> elements;
+	EvalResult evaluate(Program& program) override;
+};
+
+/// <summary>
 /// Variable Expression Node
 /// </summary>
 class VarExprNode : public ExprNode
@@ -417,6 +426,10 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Native Function Call Node
+/// e.g. std::print("Hello World");
+/// </summary>
 class NativeFunctionCallNode : public ExprNode {
 public:
 	std::string namespaceName;
@@ -425,6 +438,9 @@ public:
 	EvalResult evaluate(Program& program) override;
 };
 
+/// <summary>
+/// Comment Node
+/// </summary>
 class CommentNode : public StmtNode {
 public:
 	std::string content;
