@@ -120,7 +120,7 @@ Extend XTML functionality through dynamically loaded C++ modules (DLLs). This al
 Call module functions in templates like any built-in function:
 
 ```xtml
-var sum = MyMath::add(10, 5);
+var sum = native MyMath::add(10, 5);
 ```
 
 Modules are loaded automatically when a function call is encountered, or they can be pre-loaded via a configuration.
