@@ -3,6 +3,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommandArguments>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArgumentsHistory>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='xtmlLib (Debug)|x64'">
     <LocalDebuggerCommandArguments>build "C:\Users\andy1\Documents\xtml\First Test\index.xtml"</LocalDebuggerCommandArguments>
