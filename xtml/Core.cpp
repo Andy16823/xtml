@@ -7,7 +7,7 @@
 #include "Statements.h"
 #include "Lexer.h"
 #include "Parser.h"
-#include "ASTNode.h"
+#include "ast/ASTNode.h"
 
 using namespace std;
 
@@ -15,7 +15,11 @@ std::string Core::buildFile(const std::string& path)
 {
 	// Read file content
 	auto content = Utils::readFile(path);
+	return Core::buildString(content, path);
+}
 
+std::string Core::buildString(std::string& content, const std::string& path) {
+	
 	// Build root node and evaluate content
 	auto root = Core::buildRoot(path, content);
 
@@ -153,7 +157,7 @@ vector<XtmlTag> Core::findXtmlTags(const string& content) {
 	// Kombinierte Regex:
 	// 1. Alternative: self-closing <xtml ... />
 	// 2. Alternative: block <xtml ...> ... </xtml>
-	// ([\s\S]*?) wird benutzt als dotall-Ersatz für inneren Inhalt
+	// ([\s\S]*?) wird benutzt als dotall-Ersatz fï¿½r inneren Inhalt
 	regex re(R"(<xtml\b([^>]*)\/>|<xtml\b([^>]*)>([\s\S]*?)<\/xtml>)");
 
 	auto it = sregex_iterator(content.begin(), content.end(), re);

@@ -147,6 +147,15 @@ int main(int argc, char* argv[])
 	else if (command == "build") {
 		action_build(argv[2]);
 	}
+	else if (command == "build-string") {
+		std::string content = argv[2];
+		auto result = Core::buildString(content);
+		Utils::printLn(result);
+	}
+	else {
+		Utils::printerrLn("Unknown command: " + command);
+		return 1;
+	}
 
 
 	return 0;  

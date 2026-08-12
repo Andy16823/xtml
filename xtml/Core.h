@@ -47,6 +47,13 @@ public:
 	static std::string buildFile(const std::string& path);
 
 	/// <summary>
+	/// Build a string from XTML content and return the resulting HTML content
+	/// </summary>
+	/// <param name="content"></param>
+	/// <returns></returns>
+	static std::string buildString(std::string& content, const std::string& path = "");
+
+	/// <summary>
 	/// Build the root node for an XTML file and populate the content with evaluated HTML
 	/// </summary>
 	/// <param name="path"></param>

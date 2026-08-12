@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 #include "Lexer.h"
-#include "ASTNode.h"
+#include "ast/ASTNode.h"
 
 class Parser
 {
