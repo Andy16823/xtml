@@ -1,4 +1,3 @@
-#pragma once
 #include "Vars.h"
 #include "Utils.h"
 #include <sstream>

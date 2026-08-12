@@ -484,6 +484,8 @@ EvalResult UnaryExprNode::evaluate(Program& program)
 		result.evaluated = value;
 		return result;
 	}
+
+	Utils::throwErr("Error: Unary operator applied to unsupported operand type.");
 }
 
 EvalResult XtmlBlockNode::evaluate(Program& program)

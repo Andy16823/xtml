@@ -1,4 +1,3 @@
-#pragma once
 #include "Utils.h"  
 #include <algorithm>  
 #include <iostream>  
@@ -15,7 +14,7 @@ bool Utils::isNumber(const std::string& s)
 		size_t pos;
 		std::stoi(s, &pos);
 
-		// pos == Länge ? gesamte Zeichenkette ist eine Zahl
+		// pos == Lï¿½nge ? gesamte Zeichenkette ist eine Zahl
 		return pos == s.length();
 	}
 	catch (...) {
@@ -32,7 +31,7 @@ bool Utils::isString(const std::string& s)
 {
 	if (s.size() < 2 || s.front() != '"') return false;
 
-	// Prüfe, ob das letzte Zeichen ein " ist, das nicht escaped ist
+	// Prï¿½fe, ob das letzte Zeichen ein " ist, das nicht escaped ist
 	size_t backIndex = s.size() - 1;
 	size_t escapeCount = 0;
 	while (backIndex > 0 && s[backIndex - 1 - escapeCount] == '\\') {
@@ -60,7 +59,7 @@ void Utils::printerrLn(const std::string& str)
 	std::cerr << str << std::endl;
 }
 
-void Utils::throwErr(const std::string& str, const std::string& stack_trace)
+[[noreturn]] void Utils::throwErr(const std::string& str, const std::string& stack_trace)
 {	
 	const std::string red = "\033[31m";
 	const std::string reset = "\033[0m";
@@ -186,6 +185,9 @@ bool Utils::isAbsolute(const std::string& path)
 {
 	if (path.size() >= 2 && std::isalpha(path[0]) && path[1] == ':') {
 		return true; // Windows absolute path (e.g., C:\)
+	}
+	if (!path.empty() && (path[0] == '/' || path[0] == '\\')) {
+		return true; // Unix absolute path (e.g., /usr/bin)
 	}
 	return false;
 }

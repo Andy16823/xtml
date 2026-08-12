@@ -530,6 +530,8 @@ std::unique_ptr<HtmlStmtNode> Parser::parseHtmlStatement(const Token& token)
 		}
 		return htmlStmt;
 	}
+
+	return htmlStmt; // self-closing tag
 }
 
 std::unique_ptr<HtmlTextNode> Parser::parseHtmlTextNode(const Token& token)

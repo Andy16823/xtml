@@ -128,6 +128,9 @@ Token Lexer::number() {
 		}
 		return { TokenType::IntegerLiteral, value, line, startColumn };
 	}
+
+	// number() is only entered on a digit, so value can't be empty
+	return { TokenType::IntegerLiteral, value, line, startColumn };
 }
 
 Token Lexer::string() {

@@ -55,7 +55,7 @@ public:
 	/// </summary>
 	/// <param name="str"></param>
 	/// <param name="stack_trace"></param>
-	static void throwErr(const std::string& str, const std::string& stack_trace = "");
+	[[noreturn]] static void throwErr(const std::string& str, const std::string& stack_trace = "");
 
 	/// <summary>
 	/// Escape special characters in a string
