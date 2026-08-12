@@ -35,7 +35,7 @@ public:
 	virtual EvalResult evaluate(Program& program) = 0;
 
 	void add_child(std::unique_ptr<ASTNode> child) {
-		children.push_back(move(child));
+		children.push_back(std::move(child));
 	}
 };
 
